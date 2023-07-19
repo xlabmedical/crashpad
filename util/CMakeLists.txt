@@ -273,7 +273,7 @@ if(LINUX OR ANDROID)
         endif()
         SET(HTTP_TRANSPORT_IMPL net/http_transport_socket.cc)
     endif()
-    
+
     target_sources(crashpad_util PRIVATE
         ${HTTP_TRANSPORT_IMPL}
         linux/address_types.h

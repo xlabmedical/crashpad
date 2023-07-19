@@ -256,7 +256,7 @@ bool HTTPTransportMac::ExecuteNormalRequest(NSMutableURLRequest* request,
     if (http_status < 200 || http_status > 203) {
       LOG(ERROR) << base::StringPrintf("HTTP status %ld",
                                        implicit_cast<long>(http_status));
-      return false;
+//      return false;
     }
 
     if (response_body) {
