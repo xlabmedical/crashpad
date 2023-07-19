@@ -1,0 +1,108 @@
+{
+	"version": 3,
+	"configurePresets": [
+		{
+			"name": "windows-base-ninja",
+			"hidden": true,
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build/${presetName}",
+			"installDir": "${sourceDir}/install/${presetName}",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "cl.exe",
+				"CMAKE_CXX_COMPILER": "cl.exe",
+				"CMAKE_C_FLAGS": "/Zi",
+				"CMAKE_CXX_FLAGS": "/Zi",
+				"ENABLE_UI": "ON"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			},
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			}
+		},
+		{
+			"name": "macos-base",
+			"hidden": true,
+			"binaryDir": "${sourceDir}/build/${presetName}",
+			"installDir": "${sourceDir}/install/${presetName}",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
+				"ENABLE_UI": "ON"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Darwin"
+			},
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"environment": {
+				"CMAKE_OSX_ARCHITECTURES": "x86_64"
+			}
+		},
+		{
+			"name": "macos-base-ninja",
+			"inherits": "macos-base",
+			"hidden": true,
+			"generator": "Ninja"
+		},
+
+		{
+			"name": "Ninja-Debug-Win",
+			"displayName": "Debug-Ninja",
+			"inherits": "windows-base-ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_C_FLAGS": "/Zi",
+				"CMAKE_CXX_FLAGS": "/Zi"
+			}
+		},
+		{
+			"name": "Ninja-Debug-MacOS",
+			"displayName": "Debug-Ninja",
+			"inherits": "macos-base-ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "Ninja-Release-Win",
+			"displayName": "Release-Ninja",
+			"inherits": "windows-base-ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "Ninja-Release-MacOS",
+			"displayName": "Release-Ninja",
+			"inherits": "macos-base-ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "Ninja-RelWithDebInfo-Win",
+			"displayName": "RelWithDebInfo-Ninja",
+			"inherits": "windows-base-ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "Ninja-RelWithDebInfo-MacOS",
+			"displayName": "RelWithDebInfo-Ninja",
+			"inherits": "macos-base-ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		}
+	]
+}
