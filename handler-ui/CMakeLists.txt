@@ -87,6 +87,21 @@ crashpad_install_dev(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
     FILES_MATCHING PATTERN "*.h"
 )
 
+add_executable(test_http_client WIN32 test_http_client.cpp)
+target_link_libraries(test_http_client
+        PRIVATE
+        $<BUILD_INTERFACE:crashpad_interface>
+        PUBLIC
+        crashpad_client
+        crashpad_getopt
+        crashpad_handler_lib
+        crashpad_minidump
+        crashpad_snapshot
+        crashpad_tools
+        crashpad_util
+        mini_chromium
+)
+
 if(NOT IOS)
     add_executable(crashpad_handler_ui WIN32
         main.cc
