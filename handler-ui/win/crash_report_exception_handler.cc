@@ -20,6 +20,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "client/crash_report_database.h"
 #include "client/settings.h"
+#include "handler-ui/mtgui.h"
+#include "handler-ui/ui/CrashUploadDialog.h"
 #include "handler/crash_report_upload_thread.h"
 #include "minidump/minidump_file_writer.h"
 #include "minidump/minidump_user_extension_stream_data_source.h"
@@ -141,10 +143,17 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
           Metrics::CaptureResult::kFinishedWritingCrashReportFailed);
       return termination_code;
     }
-
-    if (upload_thread_) {
-      upload_thread_->ReportPending(uuid);
+    std::optional<DialogResult> result;
+    run_in_gui_thread_blocking(new QAppLambda([&result](){
+      CrashUploadDialog dialog;
+      result = dialog.execDialogWithResult();
+    }));
+    if(result.has_value()) {
     }
+
+      if (upload_thread_) {
+        upload_thread_->ReportPending(uuid);
+      }
   }
 
   Metrics::ExceptionCaptureResult(Metrics::CaptureResult::kSuccess);

@@ -13,6 +13,8 @@ add_library(crashpad_handler_ui_lib STATIC
     prune_crash_reports_thread.h
     user_stream_data_source.cc
     user_stream_data_source.h
+    ui/CrashUploadDialog.cpp
+    mtgui.cpp
 )
 if(APPLE)
     target_sources(crashpad_handler_ui_lib PRIVATE
@@ -63,8 +65,14 @@ target_link_libraries(crashpad_handler_ui_lib
         crashpad_snapshot
         crashpad_util
         mini_chromium
+        Qt5::Core
+        Qt5::Widgets
 )
 
+target_include_directories(crashpad_handler_ui_lib PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
 if(WIN32)
     if(MSVC)
         target_link_libraries(crashpad_handler_ui_lib PUBLIC crashpad_getopt)
@@ -87,7 +95,7 @@ crashpad_install_dev(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
     FILES_MATCHING PATTERN "*.h"
 )
 
-add_executable(test_http_client WIN32 test_http_client.cpp)
+add_executable(test_http_client test_http_client.cpp)
 target_link_libraries(test_http_client
         PRIVATE
         $<BUILD_INTERFACE:crashpad_interface>
@@ -103,12 +111,8 @@ target_link_libraries(test_http_client
 )
 
 if(NOT IOS)
-    add_executable(crashpad_handler_ui WIN32
+    add_executable(crashpad_handler_ui
         main.cc
-        ui/CrashUploadDialog.cpp
-    )
-    target_include_directories(crashpad_handler_ui PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}
     )
 
     if(LINUX)
@@ -123,19 +127,17 @@ if(NOT IOS)
         PUBLIC
             crashpad_client
             crashpad_getopt
-            crashpad_handler_lib
+            crashpad_handler_ui_lib
             crashpad_minidump
             crashpad_snapshot
             crashpad_tools
             crashpad_util
             mini_chromium
-            Qt5::Core
-            Qt5::Widgets
     )
 
     if(WIN32)
         if(MSVC)
-            target_link_options(crashpad_handler_ui PRIVATE "/SUBSYSTEM:WINDOWS")
+#            target_link_options(crashpad_handler_ui PRIVATE "/SUBSYSTEM:WINDOWS")
         endif()
     endif()
 

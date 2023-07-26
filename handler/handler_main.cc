@@ -557,7 +557,8 @@ void InitCrashpadLogging() {
   settings.logging_dest = logging::LOG_TO_FILE;
   settings.log_file_path = "/var/log/chrome/chrome";
 #elif BUILDFLAG(IS_WIN)
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_FILE;
+//  settings.log_file_path
 #else
   settings.logging_dest =
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;

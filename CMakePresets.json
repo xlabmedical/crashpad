@@ -12,7 +12,8 @@
 				"CMAKE_CXX_COMPILER": "cl.exe",
 				"CMAKE_C_FLAGS": "/Zi",
 				"CMAKE_CXX_FLAGS": "/Zi",
-				"ENABLE_UI": "ON"
+				"ENABLE_UI": "ON",
+				"CRASHPAD_BUILD_TOOLS": "ON"
 			},
 			"condition": {
 				"type": "equals",

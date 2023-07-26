@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "util/file/file_reader.h"
 #include "util/misc/metrics.h"
@@ -16,6 +17,10 @@
 using namespace crashpad;
 
 int main() {
+
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
+  logging::InitLogging(settings);
   HTTPMultipartBuilder http_multipart_builder;
   http_multipart_builder.SetGzipEnabled(true);
 
@@ -36,26 +41,26 @@ int main() {
 //  }
 
   std::unique_ptr<FileReader> reader = std::make_unique<FileReader>();
-  reader->Open(base::FilePath("/Users/miha/work/tmp/projectpart.stl"));
-//  http_multipart_builder.SetFileAttachment(kMinidumpKey,
-//                                           "aaaa.dmp",
-//                                           reader.get(),
-//                                           "application/octet-stream");
+  reader->Open(base::FilePath(L"C:\\work\\build.bat"));
+  http_multipart_builder.SetFileAttachment(kMinidumpKey,
+                                           "aaaa.dmp",
+                                           reader.get(),
+                                           "application/octet-stream");
 
   std::unique_ptr<HTTPTransport> http_transport(HTTPTransport::Create());
 
-//  for (const auto& content_header : content_headers) {
-//    http_transport->SetHeader(content_header.first, content_header.second);
-//  }
+  HTTPHeaders content_headers;
+  http_multipart_builder.PopulateContentHeaders(&content_headers);
+  for (const auto& content_header : content_headers) {
+    http_transport->SetHeader(content_header.first, content_header.second);
+  }
+  http_transport->SetHeader("Medic-Secret", "0e992b12-1192-4a65-a0c0-b4461d28d12f");
   std::unique_ptr<HTTPBodyStream> stream = std::make_unique<FileReaderHTTPBodyStream>(reader.get());
   http_transport->SetBodyStream(std::move(stream));
   // TODO(mark): The timeout should be configurable by the client.
   http_transport->SetTimeout(120);
-//  http_transport->
 
-    std::string url = "http://localhost:9090/";
-//  std::string url = "https://medic-ai-datasets.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV7E76JTQOHV6IODI/20230725/eu-central-1/s3/aws4_request&X-Amz-Date=20230725T201929Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=51e037d3e289bbcba7d967bda2a9f917c4c9166d1a670006a212a4e411277fb8";
-// std::string url = "https://medic-ai-datasets.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV7E76JTQOHV6IODI%2F20230725%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20230725T201929Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=51e037d3e289bbcba7d967bda2a9f917c4c9166d1a670006a212a4e411277fb8";
+ std::string url = "http://dali:8000/upload-item/test";
   http_transport->SetMethod("PUT");
     // Add parameters to the URL which identify the client to the server.
     static constexpr struct {
@@ -77,11 +82,13 @@ int main() {
 //                               URLEncode(it->second).c_str()));
       }
     }
-  http_transport->SetURL(url);
 
-//  http_transport->SetHTTPProxy("http://localhost:9090");
+    http_transport->SetBodyStream(http_multipart_builder.GetBodyStream());
+    http_transport->SetURL(url);
+
   std::string response_body;
   if (!http_transport->ExecuteSynchronously(&response_body)) {
+      std::cout << "error" << std::endl;
   }
   std::cout << url << std::endl;
   std::cout << response_body << std::endl;

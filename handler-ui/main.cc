@@ -16,9 +16,11 @@
 
 #include "build/build_config.h"
 #include "tools/tool_support.h"
+#include "ui/CrashUploadDialog.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+#include <QApplication>
 #endif
 
 #if BUILDFLAG(IS_POSIX)
