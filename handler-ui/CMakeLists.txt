@@ -13,6 +13,7 @@ add_library(crashpad_handler_ui_lib STATIC
     prune_crash_reports_thread.h
     user_stream_data_source.cc
     user_stream_data_source.h
+    medic_attachment_util.cpp
     ui/CrashUploadDialog.cpp
     mtgui.cpp
 )
@@ -96,19 +97,7 @@ crashpad_install_dev(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
 )
 
 add_executable(test_http_client test_http_client.cpp)
-target_link_libraries(test_http_client
-        PRIVATE
-        $<BUILD_INTERFACE:crashpad_interface>
-        PUBLIC
-        crashpad_client
-        crashpad_getopt
-        crashpad_handler_lib
-        crashpad_minidump
-        crashpad_snapshot
-        crashpad_tools
-        crashpad_util
-        mini_chromium
-)
+target_link_libraries(test_http_client PUBLIC crashpad_handler_ui_lib)
 
 if(NOT IOS)
     add_executable(crashpad_handler_ui
