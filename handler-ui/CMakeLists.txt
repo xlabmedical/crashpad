@@ -1,6 +1,8 @@
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS REQUIRED Core Widgets Network)
+find_package(libarchive CONFIG REQUIRED)
+find_package(LibLZMA CONFIG REQUIRED)
 
 add_library(crashpad_handler_ui_lib STATIC
     crash_report_upload_thread.cc
@@ -68,6 +70,8 @@ target_link_libraries(crashpad_handler_ui_lib
         mini_chromium
         Qt5::Core
         Qt5::Widgets
+        LibArchive::LibArchive
+        LibLZMA::LibLZMA
 )
 
 target_include_directories(crashpad_handler_ui_lib PRIVATE
