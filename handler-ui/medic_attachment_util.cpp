@@ -14,14 +14,86 @@
 #include "util/net/url.h"
 
 using namespace crashpad;
+#include <archive.h>
+#include <archive_entry.h>
+
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+
+#include <QTemporaryDir>
+#include <fstream>
+#include <iostream>
+#include <vector>
+
+bool addFileToArchive(const std::string& filePath, struct archive* archive) {
+  std::ifstream file(filePath, std::ios::binary);
+
+  if (!file) {
+    std::cerr << "Could not open file: " << filePath << std::endl;
+    return false;
+  }
+
+  file.seekg(0, std::ios::end);
+  size_t size = file.tellg();
+  file.seekg(0, std::ios::beg);
+  std::vector<char> fileData(size);
+
+  if (!file.read(fileData.data(), size)) {
+    std::cerr << "Could not read file: " << filePath << std::endl;
+    return false;
+  }
+
+  QFileInfo fileInfo(filePath.c_str());
+
+  struct archive_entry* entry = archive_entry_new();
+  archive_entry_set_pathname(entry, fileInfo.baseName().toStdString().c_str());
+  archive_entry_set_size(entry, size);
+  archive_entry_set_filetype(entry, AE_IFREG);
+  archive_entry_set_perm(entry, 0644);
+  archive_write_header(archive, entry);
+  archive_write_data(archive, fileData.data(), size);
+  archive_entry_free(entry);
+
+  return true;
+}
 
 std::vector<base::FilePath> MedicAttachmentUtil::GetRGProjectFiles() {
   return {};
 }
 
-std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
-    const std::vector<base::FilePath>& files) {
-  return {};
+std::optional<std::string> MedicAttachmentUtil::CompressRGProjectFiles(
+    const std::vector<std::string>& files) {
+  QTemporaryDir tempDir;
+  tempDir.setAutoRemove(false);
+  const auto filePath = tempDir.filePath("archive.zip");
+
+  int status = 0;
+
+  struct archive* archive = archive_write_new();
+  status = archive_write_set_format_zip(archive);
+  if(status != ARCHIVE_OK) {
+    return std::nullopt;
+  }
+  status = archive_write_open_filename(archive, filePath.toStdString().c_str());
+  if(status != ARCHIVE_OK) {
+    return std::nullopt;
+  }
+
+  for (const auto& item : files) {
+    bool status = addFileToArchive(item, archive);
+    if(!status) {
+      return std::nullopt;
+    }
+  }
+
+  status = archive_write_close(archive);
+  if(status != ARCHIVE_OK) {
+    return std::nullopt;
+  }
+  archive_write_free(archive);
+
+  return filePath.toStdString();
 }
 
 bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,

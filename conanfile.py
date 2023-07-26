@@ -17,7 +17,8 @@ class CompressorRecipe(ConanFile):
 	def requirements(self):
 		self.requires("qt/5.12.6@xlab/stable#0bc68af1ca2666653c18ab000f7138add73d9d48", force=True)
 		self.requires("openssl/1.1.1q#d6d3d8423b092aabec30e8193a7ca29d", force=True)
-		# self.requires("libarchive/3.6.0#9341f78645f7adfe957e853c1528284e", force=True)
+		self.requires("libarchive/3.6.0#9341f78645f7adfe957e853c1528284e", force=True)
+
 	def generate(self):
 		super().generate()
 
