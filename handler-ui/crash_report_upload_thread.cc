@@ -49,6 +49,8 @@
 #include "util/ios/scoped_background_task.h"
 #endif  // BUILDFLAG(IS_IOS)
 
+#include "medic_attachment_util.h"
+
 namespace crashpad {
 
 namespace {
@@ -372,6 +374,21 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
 
   if (!http_transport->ExecuteSynchronously(response_body)) {
     return UploadResult::kRetry;
+  }
+
+  const auto medicProject = MedicAttachmentUtil::GetMedicProjectFromReport(report);
+  if(medicProject) {
+    const auto file = MedicAttachmentUtil::CompressRGProjectFiles(medicProject->files);
+    if(file) {
+      const auto status = MedicAttachmentUtil::UploadRGProjectFile(report->uuid.ToString(), file.value());
+      if(status) {
+        LOG(INFO) << "Successfully uploaded RG project file";
+        return UploadResult::kSuccess;
+      } else {
+        LOG(ERROR) << "Failed to upload RG project file";
+        return UploadResult::kRetry;
+      }
+    }
   }
 
   return UploadResult::kSuccess;

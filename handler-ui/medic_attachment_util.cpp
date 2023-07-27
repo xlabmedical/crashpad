@@ -27,16 +27,27 @@ using namespace crashpad;
 #include <iostream>
 #include <vector>
 
-
-
 #if BUILDFLAG(IS_WIN)
 std::string convertString(std::wstring wstr) {
-  int num_chars = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), NULL, 0, NULL, NULL);
+  int num_chars = WideCharToMultiByte(CP_UTF8,
+                                      0,
+                                      wstr.c_str(),
+                                      static_cast<int>(wstr.length()),
+                                      NULL,
+                                      0,
+                                      NULL,
+                                      NULL);
   std::string strTo;
-  if (num_chars > 0)
-  {
+  if (num_chars > 0) {
     strTo.resize(num_chars);
-    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), &strTo[0], num_chars, NULL, NULL);
+    WideCharToMultiByte(CP_UTF8,
+                        0,
+                        wstr.c_str(),
+                        static_cast<int>(wstr.length()),
+                        &strTo[0],
+                        num_chars,
+                        NULL,
+                        NULL);
   }
   return strTo;
 }
@@ -91,12 +102,6 @@ bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   return true;
 }
 
-
-
-std::vector<base::FilePath> MedicAttachmentUtil::GetRGProjectFiles() {
-  return {};
-}
-
 std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
     const std::vector<std::string>& files) {
   QTemporaryDir tempDir;
@@ -108,27 +113,31 @@ std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
   struct archive* archive = archive_write_new();
 
   status = archive_write_set_format_zip(archive);
-  if(status != ARCHIVE_OK) {
+  if (status != ARCHIVE_OK) {
+    LOG(WARNING) << "Error setting archive format: " << status;
     return std::nullopt;
   }
   status = archive_write_open_filename(archive, filePath.toStdString().c_str());
-  if(status != ARCHIVE_OK) {
+  if (status != ARCHIVE_OK) {
+    LOG(WARNING) << "Error opening archive: " << status;
     return std::nullopt;
   }
 
   for (const auto& item : files) {
     status = addFileToArchive(item, archive);
-    if(!status) {
+    if (!status) {
+      LOG(WARNING) << "Error adding file to archive: " << status;
       return std::nullopt;
     }
   }
 
   status = archive_write_close(archive);
-  if(status != ARCHIVE_OK) {
+  if (status != ARCHIVE_OK) {
+    LOG(WARNING) << "Error closing archive: " << status;
     return std::nullopt;
   }
   archive_write_free(archive);
-
+  LOG(INFO) << "Archive created: " << filePath.toStdString();
   return toFilePath(filePath);
 }
 
@@ -175,4 +184,36 @@ bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
     return false;
   }
   return true;
+}
+
+std::optional<XMedicProject> MedicAttachmentUtil::GetMedicProjectFromReport(
+    const crashpad::CrashReportDatabase::UploadReport* report) {
+  for (const auto& pair : report->GetAttachments()) {
+    LOG(INFO) << "Checking attachment: " << pair.first;
+    if (pair.first.find("xmedic_project_location")) {
+      LOG(INFO) << "Attachment is correct " << pair.first;
+      XMedicProject project;
+      QFile file(pair.first.c_str());
+      if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return std::nullopt;
+      }
+      const auto content = QString(file.readAll());
+      if (content.isEmpty()) {
+        LOG(INFO) << "Content is empty!";
+        return std::nullopt;
+      }
+
+      LOG(INFO) << "Content is: " << content.toStdString();
+      const auto parts = content.split(";");
+
+      std::vector<std::string> partsVector;
+
+      for (const auto& part : parts) {
+        partsVector.push_back(part.toStdString());
+      }
+
+      return XMedicProject{partsVector};
+    }
+  }
+  return std::nullopt;
 }

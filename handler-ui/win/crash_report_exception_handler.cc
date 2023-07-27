@@ -33,6 +33,7 @@
 #include "util/win/scoped_process_suspend.h"
 #include "util/win/termination_codes.h"
 
+#include "medic_attachment_util.h"
 namespace crashpad {
 
 CrashReportExceptionHandler::CrashReportExceptionHandler(
@@ -143,6 +144,7 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
           Metrics::CaptureResult::kFinishedWritingCrashReportFailed);
       return termination_code;
     }
+    const auto medicProject = MedicAttachmentUtil::getMedicProjectFromReport(new_report);
     std::optional<DialogResult> result;
     run_in_gui_thread_blocking(new QAppLambda([&result](){
       CrashUploadDialog dialog;
