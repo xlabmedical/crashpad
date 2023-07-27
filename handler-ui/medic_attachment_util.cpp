@@ -27,6 +27,27 @@ using namespace crashpad;
 #include <iostream>
 #include <vector>
 
+
+
+
+
+base::FilePath toFilePath(const QString& string) {
+#if BUILDFLAG(IS_WIN)
+  return base::FilePath(string.toStdWString());
+#else
+  return base::FilePath(string.toStdString());
+#endif
+}
+
+std::string fpToString(const base::FilePath& filePath) {
+#if BUILDFLAG(IS_WIN)
+  return filePath.AsUTF8Unsafe();
+#else
+  return filePath.value();
+#endif
+}
+
+
 bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   std::ifstream file(filePath, std::ios::binary);
 
@@ -59,33 +80,13 @@ bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   return true;
 }
 
-std::string convertString(std::wstring wstr) {
-  int num_chars = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), NULL, 0, NULL, NULL);
-  std::string strTo;
-  if (num_chars > 0)
-  {
-    strTo.resize(num_chars);
-    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), &strTo[0], num_chars, NULL, NULL);
-  }
-  return strTo;
-}
 
-std::wstring convertWString(std::string str) {
-  int num_chars = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), NULL, 0);
-  std::wstring strTo;
-  if (num_chars > 0)
-  {
-    strTo.resize(num_chars);
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), &strTo[0], num_chars);
-  }
-  return strTo;
-}
 
 std::vector<base::FilePath> MedicAttachmentUtil::GetRGProjectFiles() {
   return {};
 }
 
-std::optional<std::string> MedicAttachmentUtil::CompressRGProjectFiles(
+std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
     const std::vector<std::string>& files) {
   QTemporaryDir tempDir;
   tempDir.setAutoRemove(false);
@@ -117,7 +118,7 @@ std::optional<std::string> MedicAttachmentUtil::CompressRGProjectFiles(
   }
   archive_write_free(archive);
 
-  return filePath.toStdString();
+  return toFilePath(filePath);
 }
 
 bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
@@ -128,11 +129,11 @@ bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
   std::unique_ptr<FileReader> reader = std::make_unique<FileReader>();
 
   if (!reader->Open(file)) {
-    LOG(WARNING) << "Error opening file!" << convertString(file.value());
+    LOG(WARNING) << "Error opening file!" << fpToString(file);
   }
 
   http_multipart_builder.SetFileAttachment("project_file",
-                                           convertString(file.BaseName().value()),
+                                           fpToString(file.BaseName()),
                                            reader.get(),
                                            "application/octet-stream");
 
