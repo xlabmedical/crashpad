@@ -144,14 +144,19 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
           Metrics::CaptureResult::kFinishedWritingCrashReportFailed);
       return termination_code;
     }
-    const auto medicProject = MedicAttachmentUtil::getMedicProjectFromReport(new_report);
-    std::optional<DialogResult> result;
-    run_in_gui_thread_blocking(new QAppLambda([&result](){
-      CrashUploadDialog dialog;
-      result = dialog.execDialogWithResult();
-    }));
-    if(result.has_value()) {
-    }
+
+//    std::unique_ptr<const CrashReportDatabase::UploadReport> crashReport;
+//    database_->GetReportForUploading(uuid, &crashReport);
+//    if(crashReport) {
+//      const auto medicProject = MedicAttachmentUtil::GetMedicProjectFromReport(crashReport.get());
+//      std::optional<DialogResult> result;
+//      run_in_gui_thread_blocking(new QAppLambda([&result](){
+//        CrashUploadDialog dialog;
+//        result = dialog.execDialogWithResult();
+//      }));
+//      if(result.has_value()) {
+//      }
+//    }
 
       if (upload_thread_) {
         upload_thread_->ReportPending(uuid);
