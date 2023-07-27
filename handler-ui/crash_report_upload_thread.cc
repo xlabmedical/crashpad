@@ -50,6 +50,8 @@
 #endif  // BUILDFLAG(IS_IOS)
 
 #include "medic_attachment_util.h"
+#include "mtgui.h"
+#include "ui/CrashUploadDialog.h"
 
 namespace crashpad {
 
@@ -155,6 +157,13 @@ void CrashReportUploadThread::ProcessPendingReports() {
     }
   }
 
+    std::optional<DialogResult> result;
+    run_in_gui_thread_blocking(new QAppLambda([&result](){
+        CrashUploadDialog dialog;
+        result = dialog.execDialogWithResult();
+    }));
+    if(result.has_value()) {
+    }
   // Known pending reports are always processed (above). The rest of this
   // function is concerned with scanning for pending reports not already known
   // to this thread.
@@ -373,18 +382,21 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
   LOG(INFO) << "Uploading to:" << url;
   http_transport->SetURL(url);
   http_transport->SetHTTPProxy(http_proxy_);
-  LOG(INFO) << "Before sync" << url;
-  if (!http_transport->ExecuteSynchronously(response_body)) {
-    LOG(INFO) << "Failed to upload report " << report->uuid.ToString();
-    return UploadResult::kRetry;
-  }
+  //RENABLE THIS!!!!!!!!!!!!
+//  if (!http_transport->ExecuteSynchronously(response_body)) {
+//    LOG(INFO) << "Failed to upload report " << report->uuid.ToString();
+//    return UploadResult::kRetry;
+//  }
   LOG(INFO) << "Successfully uploaded report " << report->uuid.ToString();
 
   const auto medicProject = MedicAttachmentUtil::GetMedicProjectFromReport(report);
+  LOG(INFO) << "Got medic project: " << medicProject.has_value();
   if(medicProject) {
     const auto file = MedicAttachmentUtil::CompressRGProjectFiles(medicProject->files);
+    LOG(INFO) << "Compressed RG project file, uploading to RG server";
     if(file) {
       const auto status = MedicAttachmentUtil::UploadRGProjectFile(report->uuid.ToString(), file.value());
+      LOG(INFO) << "Uploaded RG project file, status: " << status;
       if(status) {
         LOG(INFO) << "Successfully uploaded RG project file";
         return UploadResult::kSuccess;
@@ -395,7 +407,7 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
     }
   }
 
-  LOG(INFO) << "Mjau" << report->uuid.ToString();
+  LOG(INFO) << "Finished with report!" << report->uuid.ToString();
   return UploadResult::kSuccess;
 }
 

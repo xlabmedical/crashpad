@@ -19,12 +19,18 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
-#include <QApplication>
 #endif
 
 #if BUILDFLAG(IS_POSIX)
 
+#include <QApplication>
+#include <QDialog>
+#include <QMainWindow>
+#include <QVBoxLayout>
+#include "ui/CrashUploadDialog.h"
+
 int main(int argc, char* argv[]) {
+  QApplication a(argc, argv);
   return crashpad::HandlerMain(argc, argv, nullptr);
 }
 

@@ -133,7 +133,7 @@ std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
   QTemporaryDir tempDir;
   tempDir.setAutoRemove(false);
   const auto filePath = tempDir.filePath("archive.zip");
-
+  const auto filePathString = filePath.toStdString();
   int status = 0;
 
   struct archive* archive = archive_write_new();
@@ -143,7 +143,7 @@ std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
     LOG(WARNING) << "Error setting archive format: " << status;
     return std::nullopt;
   }
-  status = archive_write_open_filename(archive, filePath.toStdString().c_str());
+  status = archive_write_open_filename(archive, filePathString.c_str());
   if (status != ARCHIVE_OK) {
     LOG(WARNING) << "Error opening archive: " << status;
     return std::nullopt;
@@ -216,20 +216,16 @@ bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
 std::optional<XMedicProject> MedicAttachmentUtil::GetMedicProjectFromReport(
     const crashpad::CrashReportDatabase::UploadReport* report) {
   for (const auto& pair : report->GetAttachments()) {
-    LOG(INFO) << "Checking attachment: " << pair.first;
     if (pair.first == "__xmedic_files") {
-      LOG(INFO) << "Attachment is correct " << pair.first;
+      LOG(INFO) << "Found medic files" << pair.first;
 
       XMedicProject project;
 
       const auto fileSize =  pair.second->Seek(0, SEEK_END);
       pair.second->SeekSet(0);
-
-      std::unique_ptr<char> buffer = std::make_unique<char>(fileSize);
-
-      pair.second->Read(buffer.get(), fileSize);
+      auto buffer = std::unique_ptr<char[]>(new char[fileSize + 1]);
+      pair.second->ReadExactly(buffer.get(), fileSize);
       pair.second->SeekSet(0);
-
       const auto content = QString::fromUtf8(buffer.get(), fileSize);
       if (content.isEmpty()) {
         LOG(INFO) << "Content is empty!";
