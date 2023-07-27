@@ -71,7 +71,7 @@ target_link_libraries(crashpad_handler_ui_lib
         Qt5::Core
         Qt5::Widgets
         LibArchive::LibArchive
-#        LibLZMA::LibLZMA
+        LibLZMA::LibLZMA
 )
 
 target_include_directories(crashpad_handler_ui_lib PRIVATE
