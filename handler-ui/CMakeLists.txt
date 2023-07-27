@@ -1,7 +1,7 @@
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
-find_package(Qt5 COMPONENTS REQUIRED Core Widgets Network)
-find_package(libarchive CONFIG REQUIRED)
+find_package(Qt5 COMPONENTS REQUIRED Core Widgets)
+find_package(LibArchive CONFIG REQUIRED)
 
 add_library(crashpad_handler_ui_lib STATIC
     crash_report_upload_thread.cc
@@ -100,6 +100,10 @@ crashpad_install_dev(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
 
 add_executable(test_http_client test_http_client.cpp)
 target_link_libraries(test_http_client PUBLIC crashpad_handler_ui_lib)
+
+add_executable(test_upload_thread WIN32 test_upload_thread.cpp)
+target_link_libraries(test_upload_thread PUBLIC crashpad_handler_ui_lib)
+target_link_options(test_upload_thread PRIVATE "/SUBSYSTEM:WINDOWS")
 
 if(NOT IOS)
     add_executable(crashpad_handler_ui WIN32

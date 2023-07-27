@@ -81,6 +81,7 @@
 #include "util/posix/signals.h"
 #elif BUILDFLAG(IS_WIN)
 #include <windows.h>
+#include <QString>
 
 #include "handler/win/crash_report_exception_handler.h"
 #include "medic_attachment_util.h"
@@ -569,13 +570,41 @@ void InitCrashpadLogging(base::FilePath log_folder = base::FilePath()) {
 }
 
 }  // namespace
-
+void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+  QString txt;
+  QString level;
+  switch (type) {
+    case QtDebugMsg:
+      txt = QString("Debug: %1").arg(msg);
+      level = "debug";
+      break;
+    case QtWarningMsg:
+      txt = QString("Warning: %1").arg(msg);
+      level = "warning";
+      break;
+    case QtCriticalMsg:
+      txt = QString("Critical: %1").arg(msg);
+      level = "critical";
+      break;
+    case QtInfoMsg:
+      txt = QString("Info: %1").arg(msg);
+      level = "info";
+      break;
+    case QtFatalMsg:
+      txt = QString("Fatal: %1").arg(msg);
+      level = "fatal";
+      break;
+  }
+  LOG(INFO) << txt.toStdString();
+  fflush(stdout);
+}
 int HandlerMain(int argc,
                 char* argv[],
                 const UserStreamDataSources* user_stream_sources) {
   InstallCrashHandler();
   CallMetricsRecordNormalExit metrics_record_normal_exit;
-
+  qInstallMessageHandler(myMessageOutput);
   const base::FilePath argv0(
       ToolSupport::CommandLineArgumentToFilePathStringType(argv[0]));
   const base::FilePath me(argv0.BaseName());
