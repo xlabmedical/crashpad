@@ -10,8 +10,12 @@
 #include "base/files/file_path.h"
 #include "client/crash_report_database.h"
 #include "base/logging.h"
+
+#include <QString>
+
 struct XMedicProject {
   std::vector<std::string> files;
+  std::string report_uuid;
 };
 
 void setLogPath(const base::FilePath& path);
@@ -27,6 +31,7 @@ std::optional<XMedicProject> GetMedicProjectFromReport(
 std::optional<base::FilePath> CompressRGProjectFiles(
     const std::vector<std::string>& files);
 bool UploadRGProjectFile(std::string report_id, base::FilePath file);
+bool UploadRGProjectFile(std::string report_id, QString filePath);
 };  // namespace MedicAttachmentUtil
 
 #endif  // CRASHPAD_MEDIC_ATTACHMENT_UTIL_H
