@@ -1,6 +1,6 @@
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
-find_package(Qt5 COMPONENTS REQUIRED Core Widgets)
+find_package(Qt5 COMPONENTS REQUIRED Core Widgets Network)
 find_package(LibArchive CONFIG REQUIRED)
 
 add_library(crashpad_handler_ui_lib STATIC
@@ -16,6 +16,7 @@ add_library(crashpad_handler_ui_lib STATIC
     user_stream_data_source.h
     medic_attachment_util.cpp
     ui/CrashUploadDialog.cpp
+    ui/CrashUploadProgressDialog.cpp
     mtgui.cpp
 )
 if(APPLE)
@@ -69,6 +70,7 @@ target_link_libraries(crashpad_handler_ui_lib
         mini_chromium
         Qt5::Core
         Qt5::Widgets
+        Qt5::Network
         LibArchive::LibArchive
 )
 
