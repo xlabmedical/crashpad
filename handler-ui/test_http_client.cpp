@@ -47,6 +47,6 @@ int main() {
   if (compressedFile.has_value()) {
     MedicAttachmentUtil::UploadRGProjectFile(
         "ed1c3e26-b029-4d29-b6b3-a84b3e573a38",
-        base::FilePath(convertWString(compressedFile.value())));
+        compressedFile.value());
   }
 }

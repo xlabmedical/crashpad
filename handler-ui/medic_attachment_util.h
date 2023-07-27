@@ -13,7 +13,7 @@ std::wstring convertWString(std::string str);
 namespace MedicAttachmentUtil {
 
   std::vector<base::FilePath> GetRGProjectFiles();
-  std::optional<std::string> CompressRGProjectFiles(const std::vector<std::string>& files);
+  std::optional<base::FilePath> CompressRGProjectFiles(const std::vector<std::string>& files);
   bool UploadRGProjectFile(std::string report_id, base::FilePath file);
 };
 
