@@ -75,6 +75,7 @@
 #include "handler/mac/crash_report_exception_handler.h"
 #include "handler/mac/exception_handler_server.h"
 #include "handler/mac/file_limit_annotation.h"
+#include "medic_attachment_util.h"
 #include "util/mach/bootstrap.h"
 #include "util/mach/child_port_handshake.h"
 #include "util/posix/close_stdio.h"

@@ -166,34 +166,15 @@ std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
   LOG(INFO) << "Archive created: " << filePath.toStdString();
   return toFilePath(filePath);
 }
+#include <QApplication>
 #include <QFile>
+#include <QHttpMultiPart>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QHttpMultiPart>
 
-void UploadRGProjectFile(std::string report_id,
+bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
                          QString filePath) {
-  QUrl url("https://crash.medicteam.io/upload-item/" + QString::fromStdString(report_id));
-  QNetworkRequest request(url);
-
-  QNetworkAccessManager manager;
-
-  auto *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
-
-  QHttpPart filePart;
-  filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/octet-stream"));
-  const auto dispositionHeader = QString(R"(form-data; name="project_file"; filename="archive.zip")");
-  filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(dispositionHeader));
-
-  auto *file = new QFile(filePath);
-  file->open(QIODevice::ReadOnly);
-  filePart.setBodyDevice(file);
-  file->setParent(multiPart);
-
-  multiPart->append(filePart);
-
-  QNetworkReply *reply = manager.post(request, multiPart);
-  multiPart->setParent(reply); // delete the multiPart with the reply
+//  QUrl url("https://crash.medicteam.io/upload-item/" + QString::fromStdString(report_id));
 
 //  reply->
   // here connect signals etc.
@@ -230,7 +211,8 @@ bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
   http_transport->SetBodyStream(std::move(stream));
   http_transport->SetTimeout(300);
 
-  std::string url = "https://crash.medicteam.io/upload-item/" + report_id;
+//  std::string url = "https://crash.medicteam.io/upload-item/" + report_id;
+    std::string url = "http://localhost:9090/upload-item/" + report_id;
   http_transport->SetBodyStream(http_multipart_builder.GetBodyStream());
   http_transport->SetURL(url);
   LOG(INFO) << "Uploading file to: " << url;
