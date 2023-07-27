@@ -69,13 +69,21 @@ std::string fpToString(const base::FilePath& filePath) {
 #endif
 }
 
+
+std::string logFilePath;
+
+void setLogPath(const base::FilePath& path) {
+  logFilePath = fpToString(path);
+  logFilePath += "/crashpad.log";
+}
+
 bool MedicCustomLogging(logging::LogSeverity severity,
                                const char* file,
                                int line,
                                size_t message_start,
                                const std::string& str) {
   std::ofstream logfile;
-  logfile.open("C:\\work\\log.txt", std::ios_base::app); // append to the log file
+  logfile.open(logFilePath, std::ios_base::app); // append to the log file
   if (!logfile) {
     return false;  // return false if unable to open the file
   }
@@ -209,14 +217,20 @@ std::optional<XMedicProject> MedicAttachmentUtil::GetMedicProjectFromReport(
     const crashpad::CrashReportDatabase::UploadReport* report) {
   for (const auto& pair : report->GetAttachments()) {
     LOG(INFO) << "Checking attachment: " << pair.first;
-    if (pair.first.find("xmedic_project_location")) {
+    if (pair.first == "__xmedic_files") {
       LOG(INFO) << "Attachment is correct " << pair.first;
+
       XMedicProject project;
-      QFile file(pair.first.c_str());
-      if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return std::nullopt;
-      }
-      const auto content = QString(file.readAll());
+
+      const auto fileSize =  pair.second->Seek(0, SEEK_END);
+      pair.second->SeekSet(0);
+
+      std::unique_ptr<char> buffer = std::make_unique<char>(fileSize);
+
+      pair.second->Read(buffer.get(), fileSize);
+      pair.second->SeekSet(0);
+
+      const auto content = QString::fromUtf8(buffer.get(), fileSize);
       if (content.isEmpty()) {
         LOG(INFO) << "Content is empty!";
         return std::nullopt;
@@ -230,6 +244,7 @@ std::optional<XMedicProject> MedicAttachmentUtil::GetMedicProjectFromReport(
       for (const auto& part : parts) {
         partsVector.push_back(part.toStdString());
       }
+      LOG(INFO) << "Found " << partsVector.size() << " parts!";
 
       return XMedicProject{partsVector};
     }

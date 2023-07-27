@@ -145,18 +145,19 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
       return termination_code;
     }
 
-//    std::unique_ptr<const CrashReportDatabase::UploadReport> crashReport;
-//    database_->GetReportForUploading(uuid, &crashReport);
-//    if(crashReport) {
-//      const auto medicProject = MedicAttachmentUtil::GetMedicProjectFromReport(crashReport.get());
-//      std::optional<DialogResult> result;
-//      run_in_gui_thread_blocking(new QAppLambda([&result](){
-//        CrashUploadDialog dialog;
-//        result = dialog.execDialogWithResult();
-//      }));
-//      if(result.has_value()) {
-//      }
-//    }
+    std::unique_ptr<const CrashReportDatabase::UploadReport> crashReport;
+    auto state = database_->GetReportForUploading(uuid, &crashReport);
+    LOG(INFO) << "Got report for uploading" << (crashReport != nullptr) << state;
+    if(crashReport) {
+        const auto medicProject = MedicAttachmentUtil::GetMedicProjectFromReport(crashReport.get());
+        std::optional<DialogResult> result;
+        run_in_gui_thread_blocking(new QAppLambda([&result](){
+          CrashUploadDialog dialog;
+          result = dialog.execDialogWithResult();
+        }));
+        if(result.has_value()) {
+        }
+      }
 
       if (upload_thread_) {
         upload_thread_->ReportPending(uuid);

@@ -14,6 +14,8 @@ struct XMedicProject {
   std::vector<std::string> files;
 };
 
+void setLogPath(const base::FilePath& path);
+
 bool MedicCustomLogging(logging::LogSeverity severity,
                                const char* file,
                                int line,
