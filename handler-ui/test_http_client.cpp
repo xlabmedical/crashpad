@@ -28,7 +28,7 @@ int main() {
 
   // Set the file filter to the query
   QStringList fileFilter;
-  fileFilter << "2ChromeCarrier_DEMO\.*";
+  fileFilter << "2ChromeCarrier_DEMO\\.*";
   dir.setNameFilters(fileFilter);
 
   QStringList fileList = dir.entryList();

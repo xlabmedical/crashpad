@@ -66,12 +66,21 @@ std::optional<std::string> MedicAttachmentUtil::CompressRGProjectFiles(
     const std::vector<std::string>& files) {
   QTemporaryDir tempDir;
   tempDir.setAutoRemove(false);
-  const auto filePath = tempDir.filePath("archive.zip");
+  const auto filePath = tempDir.filePath("archive.tar.xz");
 
   int status = 0;
 
   struct archive* archive = archive_write_new();
-  status = archive_write_set_format_zip(archive);
+
+  status = archive_write_add_filter_xz(archive);
+  if(status != ARCHIVE_OK) {
+    return std::nullopt;
+  }
+  status = archive_write_set_options(archive, "threads=0, preset=2");
+  if(status != ARCHIVE_OK) {
+    return std::nullopt;
+  }
+  status = archive_write_set_format_pax_restricted(archive);
   if(status != ARCHIVE_OK) {
     return std::nullopt;
   }
