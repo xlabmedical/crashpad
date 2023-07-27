@@ -69,6 +69,24 @@ std::string fpToString(const base::FilePath& filePath) {
 #endif
 }
 
+bool MedicCustomLogging(logging::LogSeverity severity,
+                               const char* file,
+                               int line,
+                               size_t message_start,
+                               const std::string& str) {
+  std::ofstream logfile;
+  logfile.open("C:\\work\\log.txt", std::ios_base::app); // append to the log file
+  if (!logfile) {
+    return false;  // return false if unable to open the file
+  }
+  logfile << str;
+
+  std::cout << str;
+
+  logfile.close();
+  return true;
+}
+
 
 bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   std::ifstream file(filePath, std::ios::binary);
@@ -176,13 +194,14 @@ bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
   std::string url = "https://crash.medicteam.io/upload-item/" + report_id;
   http_transport->SetBodyStream(http_multipart_builder.GetBodyStream());
   http_transport->SetURL(url);
-
+  LOG(INFO) << "Uploading file to: " << url;
   std::string response_body;
   if (!http_transport->ExecuteSynchronously(&response_body)) {
     LOG(WARNING) << "Failed to upload file to " << url
                  << " with error: " << response_body;
     return false;
   }
+  LOG(INFO) << "File uploaded success" << url;
   return true;
 }
 

@@ -4,18 +4,22 @@
 
 #include <iostream>
 
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "medic_attachment_util.h"
 
 #include <QDebug>
 #include <QDir>
 
+#include <string>
+
+
+
 int main() {
   logging::LoggingSettings settings;
   settings.logging_dest =
-      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
+      logging::LOG_TO_ALL;
   logging::InitLogging(settings);
+  logging::SetLogMessageHandler(&MedicCustomLogging);
 
 //  const char* directoryPath =
 //      "/Users/miha/.config/RealGUIDE50-DB/Storage/Chrome1676563822/Projects";
@@ -31,7 +35,7 @@ int main() {
   // Set the file filter to the query
   QStringList fileFilter;
 //  fileFilter << "2ChromeCarrier_DEMO\.*";
-  fileFilter << "Final-Hutchinson-Mary-Clean\.*";
+  fileFilter << "Final-Hutchinson-Mary-Clean.*";
   dir.setNameFilters(fileFilter);
 
   QStringList fileList = dir.entryList();

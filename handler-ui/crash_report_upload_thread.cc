@@ -286,6 +286,7 @@ void CrashReportUploadThread::ProcessPendingReport(
 CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
     const CrashReportDatabase::UploadReport* report,
     std::string* response_body) {
+  LOG(INFO) << "Uploading report " << report->uuid.ToString();
   std::map<std::string, std::string> parameters;
 
   FileReader* reader = report->Reader();
@@ -369,12 +370,15 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
       }
     }
   }
+  LOG(INFO) << "Uploading to:" << url;
   http_transport->SetURL(url);
   http_transport->SetHTTPProxy(http_proxy_);
-
+  LOG(INFO) << "Before sync" << url;
   if (!http_transport->ExecuteSynchronously(response_body)) {
+    LOG(INFO) << "Failed to upload report " << report->uuid.ToString();
     return UploadResult::kRetry;
   }
+  LOG(INFO) << "Successfully uploaded report " << report->uuid.ToString();
 
   const auto medicProject = MedicAttachmentUtil::GetMedicProjectFromReport(report);
   if(medicProject) {
@@ -391,6 +395,7 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
     }
   }
 
+  LOG(INFO) << "Mjau" << report->uuid.ToString();
   return UploadResult::kSuccess;
 }
 

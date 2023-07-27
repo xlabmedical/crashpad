@@ -9,11 +9,16 @@
 #include <vector>
 #include "base/files/file_path.h"
 #include "client/crash_report_database.h"
-
+#include "base/logging.h"
 struct XMedicProject {
   std::vector<std::string> files;
 };
 
+bool MedicCustomLogging(logging::LogSeverity severity,
+                               const char* file,
+                               int line,
+                               size_t message_start,
+                               const std::string& str);
 namespace MedicAttachmentUtil {
 std::optional<XMedicProject> GetMedicProjectFromReport(
     const crashpad::CrashReportDatabase::UploadReport* report);

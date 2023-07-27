@@ -83,6 +83,7 @@
 #include <windows.h>
 
 #include "handler/win/crash_report_exception_handler.h"
+#include "medic_attachment_util.h"
 #include "util/win/exception_handler_server.h"
 #include "util/win/handle.h"
 #include "util/win/initial_client_data.h"
@@ -563,6 +564,9 @@ void InitCrashpadLogging() {
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
 #endif
   logging::InitLogging(settings);
+
+//  logging::SetLogMessageHandler(&MedicCustomLogging);
+  LOG(INFO) << "Crashpad Handler started";
 }
 
 }  // namespace
