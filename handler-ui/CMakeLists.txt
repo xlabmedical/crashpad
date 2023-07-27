@@ -2,7 +2,6 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS REQUIRED Core Widgets Network)
 find_package(libarchive CONFIG REQUIRED)
-find_package(LibLZMA CONFIG REQUIRED)
 
 add_library(crashpad_handler_ui_lib STATIC
     crash_report_upload_thread.cc
@@ -71,7 +70,6 @@ target_link_libraries(crashpad_handler_ui_lib
         Qt5::Core
         Qt5::Widgets
         LibArchive::LibArchive
-        LibLZMA::LibLZMA
 )
 
 target_include_directories(crashpad_handler_ui_lib PRIVATE
@@ -104,7 +102,7 @@ add_executable(test_http_client test_http_client.cpp)
 target_link_libraries(test_http_client PUBLIC crashpad_handler_ui_lib)
 
 if(NOT IOS)
-    add_executable(crashpad_handler_ui
+    add_executable(crashpad_handler_ui WIN32
         main.cc
     )
 
@@ -130,7 +128,7 @@ if(NOT IOS)
 
     if(WIN32)
         if(MSVC)
-#            target_link_options(crashpad_handler_ui PRIVATE "/SUBSYSTEM:WINDOWS")
+            target_link_options(crashpad_handler_ui PRIVATE "/SUBSYSTEM:WINDOWS")
         endif()
     endif()
 
