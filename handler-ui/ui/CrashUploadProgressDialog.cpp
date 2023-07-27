@@ -22,6 +22,9 @@ CrashUploadProgressDialog::CrashUploadProgressDialog(QWidget* parent)
     setWindowTitle(tr("RealGUIDE Crash Report"));
     ui->progressBar->setRange(0, 0);
     ui->progressBar->setValue(0);
+    connect(this, &CrashUploadProgressDialog::compressionFinished, this, [=](const QString& archivePath, const QString& reportId) {
+      uploadAttachment(archivePath, reportId);
+    });
 }
 
 CrashUploadProgressDialog::~CrashUploadProgressDialog() {
@@ -29,9 +32,12 @@ CrashUploadProgressDialog::~CrashUploadProgressDialog() {
 }
 
 void CrashUploadProgressDialog::uploadAttachment(const QString& archivePath,
-                                                 const std::string& reportId) {
-  QUrl url("http://localhost:9090/" + QString::fromStdString(reportId));
+                                                 const QString& reportId) {
+//  QUrl url("http://localhost:9090/" + reportId);
+  QUrl url(QString("https://crash.medicteam.io/upload-item/%1").arg(reportId));
   QNetworkRequest request(url);
+
+  request.setRawHeader("Medic-Secret", "0e992b12-1192-4a65-a0c0-b4461d28d12f");
 
   auto *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
@@ -59,9 +65,11 @@ void CrashUploadProgressDialog::uploadAttachment(const QString& archivePath,
     accept();
   });
   connect(reply, &QNetworkReply::uploadProgress, this, [=](qint64 bytesSent, qint64 bytesTotal) {
+    qDebug() << "Progress" << bytesSent << bytesTotal;
     ui->progressBar->setMaximum(bytesTotal);
     ui->progressBar->setValue(bytesSent);
   });
+
 
   ui->labelAction->setText("Uploading crash report...");
 }
@@ -73,7 +81,7 @@ void CrashUploadProgressDialog::uploadAttachmentsExec(XMedicProject project) {
     actionFutures.push_back(std::async(std::launch::async, [&]() {
       const auto response = MedicAttachmentUtil::CompressRGProjectFiles(projectToUpload.files);
         if (response.has_value()) {
-          uploadAttachment(QString::fromStdString(response.value().value()), projectToUpload.report_uuid);
+          emit compressionFinished(QString::fromStdString(response.value().value()), QString::fromStdString(projectToUpload.report_uuid));
         }
     }));
 

@@ -44,14 +44,15 @@ int main(int argc, char** argv) {
     const auto fullPath = dir.filePath(fileName);
     files.push_back(fullPath.toStdString());
   }
-
-  run_in_gui_thread_blocking(new QAppLambda([]() {
+  QApplication app(argc, argv);
+//  run_in_gui_thread_blocking(new QAppLambda([]() {
     CrashUploadProgressDialog dialog;
 
     dialog.uploadAttachmentsExec(XMedicProject({
         {"/Users/miha/Downloads/3Diemme.zip"},
-    "test"}));
-  }));
+    "truetest"}));
+    app.exec();
+//  }));
   //  const auto compressedFile =
   //      MedicAttachmentUtil::CompressRGProjectFiles(files);
 

@@ -22,13 +22,15 @@ class CrashUploadProgressDialog : public QDialog {
   XMedicProject projectToUpload;
 
   void uploadAttachment(const QString& archivePath,
-                        const std::string& reportId);
+                        const QString& reportId);
 
  public:
   explicit CrashUploadProgressDialog(QWidget* parent = nullptr);
   ~CrashUploadProgressDialog() override;
 
   void uploadAttachmentsExec(XMedicProject project);
+signals:
+    void compressionFinished(const QString& archivePath, const QString& reportId);
 };
 
 #endif  // CRASHPAD_CRASHUPLOADPROGRESSDIALOG_H
