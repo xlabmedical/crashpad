@@ -17,8 +17,10 @@ int main() {
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
 
-  const char* directoryPath =
-      "/Users/miha/.config/RealGUIDE50-DB/Storage/Chrome1676563822/Projects";
+//  const char* directoryPath =
+//      "/Users/miha/.config/RealGUIDE50-DB/Storage/Chrome1676563822/Projects";
+//
+  const char* directoryPath = "C:\\Users\\Miha\\AppData\\Roaming\\RealGUIDE50-DB\\Storage\\XX1684238711\\Projects";
   QDir dir(directoryPath);
 
   if (!dir.exists()) {
@@ -28,7 +30,8 @@ int main() {
 
   // Set the file filter to the query
   QStringList fileFilter;
-  fileFilter << "2ChromeCarrier_DEMO\\.*";
+//  fileFilter << "2ChromeCarrier_DEMO\.*";
+  fileFilter << "Final-Hutchinson-Mary-Clean\.*";
   dir.setNameFilters(fileFilter);
 
   QStringList fileList = dir.entryList();
@@ -43,7 +46,7 @@ int main() {
 
   if (compressedFile.has_value()) {
     MedicAttachmentUtil::UploadRGProjectFile(
-        "ed1c3e26-b029-4d29-b6b3-a84b3e573a37",
-        base::FilePath(compressedFile.value()));
+        "ed1c3e26-b029-4d29-b6b3-a84b3e573a38",
+        base::FilePath(convertWString(compressedFile.value())));
   }
 }

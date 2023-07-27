@@ -3,6 +3,7 @@
 //
 
 #include "medic_attachment_util.h"
+#include <codecvt>
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "util/file/file_reader.h"
@@ -47,7 +48,7 @@ bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   QFileInfo fileInfo(filePath.c_str());
 
   struct archive_entry* entry = archive_entry_new();
-  archive_entry_set_pathname(entry, fileInfo.baseName().toStdString().c_str());
+  archive_entry_set_pathname(entry, fileInfo.fileName().toStdString().c_str());
   archive_entry_set_size(entry, size);
   archive_entry_set_filetype(entry, AE_IFREG);
   archive_entry_set_perm(entry, 0644);
@@ -56,6 +57,28 @@ bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   archive_entry_free(entry);
 
   return true;
+}
+
+std::string convertString(std::wstring wstr) {
+  int num_chars = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), NULL, 0, NULL, NULL);
+  std::string strTo;
+  if (num_chars > 0)
+  {
+    strTo.resize(num_chars);
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), &strTo[0], num_chars, NULL, NULL);
+  }
+  return strTo;
+}
+
+std::wstring convertWString(std::string str) {
+  int num_chars = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), NULL, 0);
+  std::wstring strTo;
+  if (num_chars > 0)
+  {
+    strTo.resize(num_chars);
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), &strTo[0], num_chars);
+  }
+  return strTo;
 }
 
 std::vector<base::FilePath> MedicAttachmentUtil::GetRGProjectFiles() {
@@ -82,7 +105,7 @@ std::optional<std::string> MedicAttachmentUtil::CompressRGProjectFiles(
   }
 
   for (const auto& item : files) {
-    bool status = addFileToArchive(item, archive);
+    status = addFileToArchive(item, archive);
     if(!status) {
       return std::nullopt;
     }
@@ -103,11 +126,13 @@ bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
   http_multipart_builder.SetGzipEnabled(false);
 
   std::unique_ptr<FileReader> reader = std::make_unique<FileReader>();
+
   if (!reader->Open(file)) {
-    LOG(WARNING) << "Error opening file!" << file.value();
+    LOG(WARNING) << "Error opening file!" << convertString(file.value());
   }
+
   http_multipart_builder.SetFileAttachment("project_file",
-                                           file.BaseName().value(),
+                                           convertString(file.BaseName().value()),
                                            reader.get(),
                                            "application/octet-stream");
 

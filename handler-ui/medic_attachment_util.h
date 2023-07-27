@@ -9,6 +9,7 @@
 #include <optional>
 #include "base/files/file_path.h"
 
+std::wstring convertWString(std::string str);
 namespace MedicAttachmentUtil {
 
   std::vector<base::FilePath> GetRGProjectFiles();
