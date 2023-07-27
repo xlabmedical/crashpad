@@ -29,7 +29,18 @@ using namespace crashpad;
 
 
 
-
+#if BUILDFLAG(IS_WIN)
+std::string convertString(std::wstring wstr) {
+  int num_chars = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), NULL, 0, NULL, NULL);
+  std::string strTo;
+  if (num_chars > 0)
+  {
+    strTo.resize(num_chars);
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), &strTo[0], num_chars, NULL, NULL);
+  }
+  return strTo;
+}
+#endif
 
 base::FilePath toFilePath(const QString& string) {
 #if BUILDFLAG(IS_WIN)
@@ -41,7 +52,7 @@ base::FilePath toFilePath(const QString& string) {
 
 std::string fpToString(const base::FilePath& filePath) {
 #if BUILDFLAG(IS_WIN)
-  return filePath.AsUTF8Unsafe();
+  return convertString(filePath.value());
 #else
   return filePath.value();
 #endif
