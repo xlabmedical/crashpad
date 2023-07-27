@@ -552,7 +552,7 @@ class ScopedStoppable {
   std::unique_ptr<Stoppable> stoppable_;
 };
 
-void InitCrashpadLogging() {
+void InitCrashpadLogging(base::FilePath log_folder = base::FilePath()) {
   logging::LoggingSettings settings;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   settings.logging_dest = logging::LOG_TO_FILE;
@@ -564,9 +564,8 @@ void InitCrashpadLogging() {
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
 #endif
   logging::InitLogging(settings);
-
-//  logging::SetLogMessageHandler(&MedicCustomLogging);
-  LOG(INFO) << "Crashpad Handler started";
+  setLogPath(log_folder);
+  logging::SetLogMessageHandler(&MedicCustomLogging);
 }
 
 }  // namespace
@@ -574,8 +573,6 @@ void InitCrashpadLogging() {
 int HandlerMain(int argc,
                 char* argv[],
                 const UserStreamDataSources* user_stream_sources) {
-  InitCrashpadLogging();
-
   InstallCrashHandler();
   CallMetricsRecordNormalExit metrics_record_normal_exit;
 
@@ -990,7 +987,7 @@ int HandlerMain(int argc,
     ToolSupport::UsageHint(me, nullptr);
     return ExitFailure();
   }
-
+  InitCrashpadLogging(options.database);
 #if BUILDFLAG(IS_APPLE)
   if (options.reset_own_crash_exception_port_to_system_default) {
     CrashpadClient::UseSystemDefaultHandler();

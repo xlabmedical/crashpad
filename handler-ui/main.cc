@@ -19,6 +19,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+#include <QApplication>
 #endif
 
 #if BUILDFLAG(IS_POSIX)
