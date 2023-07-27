@@ -166,7 +166,38 @@ std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
   LOG(INFO) << "Archive created: " << filePath.toStdString();
   return toFilePath(filePath);
 }
+#include <QFile>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QHttpMultiPart>
 
+void UploadRGProjectFile(std::string report_id,
+                         QString filePath) {
+  QUrl url("https://crash.medicteam.io/upload-item/" + QString::fromStdString(report_id));
+  QNetworkRequest request(url);
+
+  QNetworkAccessManager manager;
+
+  auto *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+
+  QHttpPart filePart;
+  filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/octet-stream"));
+  const auto dispositionHeader = QString(R"(form-data; name="project_file"; filename="archive.zip")");
+  filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(dispositionHeader));
+
+  auto *file = new QFile(filePath);
+  file->open(QIODevice::ReadOnly);
+  filePart.setBodyDevice(file);
+  file->setParent(multiPart);
+
+  multiPart->append(filePart);
+
+  QNetworkReply *reply = manager.post(request, multiPart);
+  multiPart->setParent(reply); // delete the multiPart with the reply
+
+//  reply->
+  // here connect signals etc.
+}
 bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
                                               base::FilePath file) {
   HTTPMultipartBuilder http_multipart_builder;
