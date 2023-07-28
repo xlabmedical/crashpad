@@ -2,7 +2,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS REQUIRED Core Widgets Network)
 find_package(LibArchive CONFIG REQUIRED)
-
+add_subdirectory(ui/xQt)
 add_library(crashpad_handler_ui_lib STATIC
     crash_report_upload_thread.cc
     crash_report_upload_thread.h
@@ -14,6 +14,7 @@ add_library(crashpad_handler_ui_lib STATIC
     prune_crash_reports_thread.h
     user_stream_data_source.cc
     user_stream_data_source.h
+    crash_upload_thread_callback_interface.cpp
     medic_attachment_util.cpp
     ui/CrashUploadDialog.cpp
     ui/CrashUploadProgressDialog.cpp
@@ -62,6 +63,7 @@ endif()
 target_link_libraries(crashpad_handler_ui_lib
     PRIVATE
         $<BUILD_INTERFACE:crashpad_interface>
+        $<BUILD_INTERFACE:xQt::xQt>
     PUBLIC
         crashpad_compat
         crashpad_minidump

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>132</height>
+    <width>417</width>
+    <height>161</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>An issue has been detected with RealGUIDE.
-A report will be sent to the server.</string>
+      <string>A problem has been identified with RealGUIDE. We will forward a report to the server for the development team's analysis. We appreciate your patience.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -36,6 +35,9 @@ A report will be sent to the server.</string>
     <widget class="QProgressBar" name="progressBar">
      <property name="value">
       <number>24</number>
+     </property>
+     <property name="textVisible">
+      <bool>false</bool>
      </property>
     </widget>
    </item>

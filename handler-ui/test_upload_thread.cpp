@@ -44,6 +44,7 @@ int main() {
   if (!database) {
     return 0;
   }
+
   ScopedStoppable upload_thread;
     CrashReportUploadThread::Options upload_thread_options;
     upload_thread_options.identify_client_via_url = false;

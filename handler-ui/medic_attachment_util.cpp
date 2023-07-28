@@ -128,7 +128,7 @@ bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   return true;
 }
 
-std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
+std::optional<QString> MedicAttachmentUtil::CompressRGProjectFiles(
     const std::vector<std::string>& files) {
   QTemporaryDir tempDir;
   tempDir.setAutoRemove(false);
@@ -164,66 +164,7 @@ std::optional<base::FilePath> MedicAttachmentUtil::CompressRGProjectFiles(
   }
   archive_write_free(archive);
   LOG(INFO) << "Archive created: " << filePath.toStdString();
-  return toFilePath(filePath);
-}
-#include <QApplication>
-#include <QFile>
-#include <QHttpMultiPart>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-
-bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
-                         QString filePath) {
-//  QUrl url("https://crash.medicteam.io/upload-item/" + QString::fromStdString(report_id));
-
-//  reply->
-  // here connect signals etc.
-}
-bool MedicAttachmentUtil::UploadRGProjectFile(std::string report_id,
-                                              base::FilePath file) {
-  HTTPMultipartBuilder http_multipart_builder;
-  http_multipart_builder.SetGzipEnabled(false);
-
-  std::unique_ptr<FileReader> reader = std::make_unique<FileReader>();
-
-  if (!reader->Open(file)) {
-    LOG(WARNING) << "Error opening file!" << fpToString(file);
-  }
-
-  http_multipart_builder.SetFileAttachment("project_file",
-                                           fpToString(file.BaseName()),
-                                           reader.get(),
-                                           "application/octet-stream");
-
-  std::unique_ptr<HTTPTransport> http_transport(HTTPTransport::Create());
-
-  HTTPHeaders content_headers;
-  http_multipart_builder.PopulateContentHeaders(&content_headers);
-  for (const auto& content_header : content_headers) {
-    http_transport->SetHeader(content_header.first, content_header.second);
-  }
-  http_transport->SetHeader("Medic-Secret",
-                            "0e992b12-1192-4a65-a0c0-b4461d28d12f");
-
-  std::unique_ptr<HTTPBodyStream> stream =
-      std::make_unique<FileReaderHTTPBodyStream>(reader.get());
-
-  http_transport->SetBodyStream(std::move(stream));
-  http_transport->SetTimeout(300);
-
-//  std::string url = "https://crash.medicteam.io/upload-item/" + report_id;
-    std::string url = "http://localhost:9090/upload-item/" + report_id;
-  http_transport->SetBodyStream(http_multipart_builder.GetBodyStream());
-  http_transport->SetURL(url);
-  LOG(INFO) << "Uploading file to: " << url;
-  std::string response_body;
-  if (!http_transport->ExecuteSynchronously(&response_body)) {
-    LOG(WARNING) << "Failed to upload file to " << url
-                 << " with error: " << response_body;
-    return false;
-  }
-  LOG(INFO) << "File uploaded success" << url;
-  return true;
+  return filePath;
 }
 
 std::optional<XMedicProject> MedicAttachmentUtil::GetMedicProjectFromReport(
@@ -255,7 +196,7 @@ std::optional<XMedicProject> MedicAttachmentUtil::GetMedicProjectFromReport(
       }
       LOG(INFO) << "Found " << partsVector.size() << " parts!";
 
-      return XMedicProject{partsVector};
+      return XMedicProject{partsVector, report->uuid.ToString()};
     }
   }
   return std::nullopt;
