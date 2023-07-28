@@ -2,8 +2,8 @@
 // Created by Miha Oražem on 26/07/2023.
 //
 
-#ifndef CRASHPAD_MEDIC_ATTACHMENT_UTIL_H
-#define CRASHPAD_MEDIC_ATTACHMENT_UTIL_H
+#ifndef CRASHPAD_MEDICATTACHMENTUTIL_H
+#define CRASHPAD_MEDICATTACHMENTUTIL_H
 
 #include <optional>
 #include <vector>
@@ -32,4 +32,4 @@ std::optional<QString> CompressRGProjectFiles(
     const std::vector<std::string>& files);
 };  // namespace MedicAttachmentUtil
 
-#endif  // CRASHPAD_MEDIC_ATTACHMENT_UTIL_H
+#endif  // CRASHPAD_MEDICATTACHMENTUTIL_H

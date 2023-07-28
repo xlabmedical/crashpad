@@ -49,10 +49,6 @@
 #include "util/ios/scoped_background_task.h"
 #endif  // BUILDFLAG(IS_IOS)
 
-#include "medic_attachment_util.h"
-#include "mtgui.h"
-#include "ui/CrashUploadDialog.h"
-#include "ui/CrashUploadProgressDialog.h"
 
 namespace crashpad {
 
@@ -375,24 +371,13 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
       }
     }
   }
-  const auto medicProject = MedicAttachmentUtil::GetMedicProjectFromReport(report);
-  LOG(INFO) << "Got medic project: " << medicProject.has_value();
-//  if(medicProject) {
-//    run_in_gui_thread_blocking(new QAppLambda([medicProject]() {
-//        CrashUploadDialog questionDialog;
-//        questionDialog.execDialogWithResult();
-//        CrashUploadProgressDialog uploadDialog;
-//        uploadDialog.uploadAttachmentsExec(medicProject.value());
-//    }));
-//  }
   http_transport->SetURL(url);
   http_transport->SetHTTPProxy(http_proxy_);
-  //RENABLE THIS!!!!!!!!!!!!
-//  if (!http_transport->ExecuteSynchronously(response_body)) {
-//    LOG(INFO) << "Failed to upload report " << report->uuid.ToString();
-//    return UploadResult::kRetry;
-//  }
-  LOG(INFO) << "Successfully uploaded report " << report->uuid.ToString();
+
+  if (!http_transport->ExecuteSynchronously(response_body)) {
+    return UploadResult::kRetry;
+  }
+
   return UploadResult::kSuccess;
 }
 

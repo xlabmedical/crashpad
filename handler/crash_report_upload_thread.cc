@@ -49,6 +49,7 @@
 #include "util/ios/scoped_background_task.h"
 #endif  // BUILDFLAG(IS_IOS)
 
+
 namespace crashpad {
 
 namespace {

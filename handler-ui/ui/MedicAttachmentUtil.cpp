@@ -2,7 +2,7 @@
 // Created by Miha Oražem on 26/07/2023.
 //
 
-#include "medic_attachment_util.h"
+#include "MedicAttachmentUtil.h"
 #include <codecvt>
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"

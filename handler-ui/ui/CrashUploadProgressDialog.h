@@ -8,7 +8,7 @@
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <future>
-#include "../medic_attachment_util.h"
+#include "MedicAttachmentUtil.h"
 namespace Ui {
   class CrashUploadProgressDialog;
 }
