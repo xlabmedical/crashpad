@@ -25,3 +25,7 @@ target_link_libraries(CrashUI PUBLIC
     crashpad_util
     mini_chromium
 )
+
+if(WIN32)
+    target_compile_definitions(CrashUI PUBLIC NOMINMAX)
+endif()

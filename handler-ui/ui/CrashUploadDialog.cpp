@@ -19,7 +19,7 @@ CrashUploadDialog::CrashUploadDialog(QWidget* parent) : QDialog(parent) {
   connect(ui->btnOk, &QAbstractButton::clicked, this, [this]() {
     done(static_cast<int>(UserSelection::Once));
   });
-
+  setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint);
   ui->btnAlways->setFocus();
 }
 
@@ -33,4 +33,10 @@ DialogResult CrashUploadDialog::execDialogWithResult() {
         static_cast<UserSelection>(result),
         ui->checkBoxProject->isChecked(),
   };
+}
+void CrashUploadDialog::showEvent(QShowEvent* event) {
+  QDialog::showEvent(event);
+  setWindowState( (windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+  raise();
+  activateWindow();
 }
