@@ -122,8 +122,8 @@ void CrashReportUploadThread::ReportPending(const UUID& report_uuid) {
 }
 
 void CrashReportUploadThread::Start() {
-  thread_.Start(
-      options_.watch_pending_reports ? 0.0 : WorkerThread::kIndefiniteWait);
+  thread_.Start(options_.watch_pending_reports ? 0.0
+                                               : WorkerThread::kIndefiniteWait);
 }
 
 void CrashReportUploadThread::Stop() {
@@ -246,6 +246,14 @@ void CrashReportUploadThread::ProcessPendingReport(
       return;
   }
 
+  LOG(INFO) << "Uploading report " << upload_report->uuid.ToString();
+  if (callback_interface_) {
+    auto consent = callback_interface_->hasUploadConsent();
+    if (!consent) {
+      return;
+    }
+  }
+
   std::string response_body;
   UploadResult upload_result =
       UploadReport(upload_report.get(), &response_body);
@@ -287,14 +295,6 @@ void CrashReportUploadThread::ProcessPendingReport(
 CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
     const CrashReportDatabase::UploadReport* report,
     std::string* response_body) {
-  LOG(INFO) << "Uploading report " << report->uuid.ToString();
-  if(callback_interface_) {
-    auto consent = callback_interface_->hasUploadConsent();
-    if(!consent) {
-      return UploadResult::kPermanentFailure;
-    }
-  }
-
   std::map<std::string, std::string> parameters;
 
   FileReader* reader = report->Reader();
@@ -378,18 +378,22 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
       }
     }
   }
-
-  if(callback_interface_) {
-    callback_interface_->onBeforeUploadReport(report);
-  }
-
   http_transport->SetURL(url);
   http_transport->SetHTTPProxy(http_proxy_);
 
-  if (!http_transport->ExecuteSynchronously(response_body)) {
-    return UploadResult::kRetry;
+  if (callback_interface_) {
+    callback_interface_->onBeforeUploadReport(report);
   }
 
+  if (!http_transport->ExecuteSynchronously(response_body)) {
+    LOG(WARNING) << "http_transport->ExecuteSynchronously failed";
+    return UploadResult::kRetry;
+  }
+  LOG(INFO) << "Upload complete: " << report->uuid.ToString();
+
+  if (callback_interface_) {
+    callback_interface_->onUploadReportDone(report);
+  }
   return UploadResult::kSuccess;
 }
 

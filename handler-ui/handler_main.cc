@@ -71,7 +71,6 @@
 #include <libgen.h>
 #include <signal.h>
 
-#include "MedicAttachmentUtil.h"
 #include "base/mac/scoped_mach_port.h"
 #include "handler/mac/crash_report_exception_handler.h"
 #include "handler/mac/exception_handler_server.h"
@@ -85,7 +84,6 @@
 #include <QString>
 
 #include "handler/win/crash_report_exception_handler.h"
-#include "medic_attachment_util.h"
 #include "util/win/exception_handler_server.h"
 #include "util/win/handle.h"
 #include "util/win/initial_client_data.h"
@@ -96,6 +94,7 @@
 #include <thread>
 #include "CrashUploadHandler.h"
 #include "xQt/callback_dispatcher.hpp"
+#include "MedicAttachmentUtil.h"
 
 namespace crashpad {
 
@@ -1061,6 +1060,7 @@ int HandlerMain(int argc,
   }
 
   QApplication app(argc, argv);
+  QApplication::setQuitOnLastWindowClosed(false);
   xQt::callback_dispatcher uiProxy;
 
   CrashUploadHandler crashCallbackHandler(&uiProxy, database.get(), fpToQString(options.database));
@@ -1243,8 +1243,10 @@ int HandlerMain(int argc,
 #endif  // BUILDFLAG(IS_WIN)
 
   auto exceptionHandlerThread =
-      std::thread([&exception_handler_server, &exception_handler, &uiProxy]() {
+      std::thread([&exception_handler_server, &exception_handler, &uiProxy, &upload_thread]() {
         exception_handler_server.Run(exception_handler.get());
+        upload_thread.Get()->Stop();
+        LOG(INFO) << "Exception handler server exit";
         uiProxy.dispatch([]() { QApplication::quit(); });
       });
 

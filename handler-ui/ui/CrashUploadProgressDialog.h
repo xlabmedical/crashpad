@@ -28,8 +28,13 @@ class CrashUploadProgressDialog : public QDialog {
   explicit CrashUploadProgressDialog(QWidget* parent = nullptr);
   ~CrashUploadProgressDialog() override;
 
-  void uploadAttachmentsExec(XMedicProject project);
-signals:
+  bool uploadAttachmentsExec(XMedicProject project);
+
+  void showDialog();
+
+ protected:
+  void showEvent(QShowEvent* event) override;
+ signals:
     void compressionFinished(const QString& archivePath, const QString& reportId);
 };
 

@@ -12,7 +12,8 @@ namespace Ui {
 }
 
 enum class UserSelection {
-  Never = 0,
+  DeniedOnce = 0,
+  Never = 1,
   Once,
   Always,
 };
@@ -25,6 +26,9 @@ struct DialogResult {
 
 class CrashUploadDialog : public QDialog {
   Q_OBJECT
+ protected:
+  void showEvent(QShowEvent* event) override;
+
  public:
   explicit CrashUploadDialog(QWidget* parent = nullptr);
   ~CrashUploadDialog() override;

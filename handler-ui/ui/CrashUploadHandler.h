@@ -5,14 +5,15 @@
 #ifndef CRASHPAD_CRASHUPLOADHANDLER_H
 #define CRASHPAD_CRASHUPLOADHANDLER_H
 #include <QSettings>
+#include "CrashUploadProgressDialog.h"
 #include "crash_upload_thread_callback_interface.h"
 #include "xQt/callback_dispatcher.hpp"
 
 enum class UploadConsent {
   NotAsked = -1,
   Denied,
-  Granted,
   GrantedOnce,
+  Granted,
 };
 
 enum class UploadConsentType {
@@ -30,9 +31,11 @@ class CrashUploadHandler : public crashpad::CrashUploadThreadCallbackInterface {
   UploadConsent mUploadConsent;
   UploadConsentType mUploadConsentType;
 
+  std::shared_ptr<CrashUploadProgressDialog> mpProgressDialog;
  public:
   explicit CrashUploadHandler(xQt::callback_dispatcher* pDispatcher,
                               crashpad::CrashReportDatabase* database, const QString& pDatabasePath);
+  void reloadSettings();
   bool hasUploadConsent() override;
   bool onBeforeUploadReport(
       const crashpad::CrashReportDatabase::UploadReport* report) override;

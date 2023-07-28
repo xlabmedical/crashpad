@@ -7,6 +7,11 @@
 #include <future>
 #include "CrashUploadDialog.h"
 #include "CrashUploadProgressDialog.h"
+
+#ifdef Q_OS_WIN
+#include <QtPlatformHeaders/QWindowsWindowFunctions>
+#endif
+
 Q_DECLARE_METATYPE(UploadConsent);
 Q_DECLARE_METATYPE(UploadConsentType);
 const QString UPLOAD_CONSENT_KEY = "UploadConsent";
@@ -18,29 +23,28 @@ CrashUploadHandler::CrashUploadHandler(xQt::callback_dispatcher* pDispatcher,
     : mpDispatcher(pDispatcher),
       mpDatabase(database),
       mDatabasePath(pDatabasePath) {
-  mpSettings = std::make_unique<QSettings>(mDatabasePath + "/settings.ini",
-                                           QSettings::IniFormat);
-  mUploadConsent =
-      mpSettings
-          ->value(UPLOAD_CONSENT_KEY, static_cast<int>(UploadConsent::NotAsked))
-          .value<UploadConsent>();
-  mUploadConsentType = mpSettings
-                           ->value(UPLOAD_CONSENT_KEY,
-                                   static_cast<int>(UploadConsentType::Basic))
-                           .value<UploadConsentType>();
+#ifdef Q_OS_WIN  // this is Windows specific code, not portable
+  QWindowsWindowFunctions::setWindowActivationBehavior(
+      QWindowsWindowFunctions::AlwaysActivateWindow);
+#endif
+  reloadSettings();
 }
 
 bool CrashUploadHandler::hasUploadConsent() {
+  reloadSettings();
   if (mUploadConsent == UploadConsent::NotAsked ||
       mUploadConsent == UploadConsent::GrantedOnce) {
     std::promise<DialogResult> promise;
 
     mpDispatcher->dispatch([this, &promise]() {
+      LOG(INFO) << "Showing question dialog";
       CrashUploadDialog dialog;
-      promise.set_value(dialog.execDialogWithResult());
+      auto result = dialog.execDialogWithResult();
+      promise.set_value(result);
     });
 
     const auto result = promise.get_future().get();
+    LOG(INFO) << "Got dialog result";
 
     mUploadConsent = UploadConsent::NotAsked;
 
@@ -63,7 +67,11 @@ bool CrashUploadHandler::hasUploadConsent() {
     mpSettings->setValue(UPLOAD_CONSENT_KEY, static_cast<int>(mUploadConsent));
     mpSettings->setValue(UPLOAD_CONSENT_TYPE,
                          static_cast<int>(mUploadConsentType));
+    mpSettings->sync();
   }
+
+  LOG(INFO) << "Upload consent: " << static_cast<int>(mUploadConsent);
+  LOG(INFO) << "Upload consent type: " << static_cast<int>(mUploadConsentType);
 
   return mUploadConsent == UploadConsent::Granted ||
          mUploadConsent == UploadConsent::GrantedOnce;
@@ -71,20 +79,45 @@ bool CrashUploadHandler::hasUploadConsent() {
 
 bool CrashUploadHandler::onBeforeUploadReport(
     const crashpad::CrashReportDatabase::UploadReport* report) {
-  if (mUploadConsentType == UploadConsentType::WithProject) {
-    const auto project = MedicAttachmentUtil::GetMedicProjectFromReport(report);
-    if (project) {
-      std::promise<bool> promise;
-      mpDispatcher->dispatch([this, report, project, &promise]() {
-        CrashUploadProgressDialog dialog;
-        dialog.uploadAttachmentsExec(project.value());
-        promise.set_value(true);
-      });
-      return promise.get_future().get();
-    }
-  }
-  return false;
+  mpDispatcher->dispatch([this]() {
+    mpProgressDialog = std::make_shared<CrashUploadProgressDialog>();
+    mpProgressDialog->showDialog();
+  });
+  return true;
 }
 
 void CrashUploadHandler::onUploadReportDone(
-    const crashpad::CrashReportDatabase::UploadReport* report) {}
+    const crashpad::CrashReportDatabase::UploadReport* report) {
+  if (mUploadConsentType == UploadConsentType::WithProject) {
+    const auto project = MedicAttachmentUtil::GetMedicProjectFromReport(report);
+    LOG(INFO) << "Project: " << project.has_value();
+    if (project && mpProgressDialog) {
+      std::promise<bool> promise;
+      mpDispatcher->dispatch([this, report, project, &promise]() {
+        mpProgressDialog->uploadAttachmentsExec(project.value());
+        promise.set_value(true);
+      });
+      const auto value = promise.get_future().get();
+      LOG(INFO) << "Waiting for upload to finish" << value;
+    }
+  }
+  if (mpProgressDialog) {
+    mpDispatcher->dispatch([this]() {
+      mpProgressDialog->close();
+    });
+  }
+  mpProgressDialog.reset();
+}
+
+void CrashUploadHandler::reloadSettings() {
+    mpSettings = std::make_unique<QSettings>(mDatabasePath + "/settings.ini",
+                                             QSettings::IniFormat);
+    mUploadConsent =
+            mpSettings
+                    ->value(UPLOAD_CONSENT_KEY, static_cast<int>(UploadConsent::NotAsked))
+                    .value<UploadConsent>();
+    mUploadConsentType = mpSettings
+            ->value(UPLOAD_CONSENT_TYPE,
+                    static_cast<int>(UploadConsentType::Basic))
+            .value<UploadConsentType>();
+}
