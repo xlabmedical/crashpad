@@ -1,8 +1,5 @@
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-find_package(Qt5 COMPONENTS REQUIRED Core Widgets Network)
-find_package(LibArchive CONFIG REQUIRED)
-add_subdirectory(ui/xQt)
+add_subdirectory(ui)
+
 add_library(crashpad_handler_ui_lib STATIC
     crash_report_upload_thread.cc
     crash_report_upload_thread.h
@@ -14,11 +11,6 @@ add_library(crashpad_handler_ui_lib STATIC
     prune_crash_reports_thread.h
     user_stream_data_source.cc
     user_stream_data_source.h
-    crash_upload_thread_callback_interface.cpp
-    medic_attachment_util.cpp
-    ui/CrashUploadDialog.cpp
-    ui/CrashUploadProgressDialog.cpp
-    mtgui.cpp
 )
 if(APPLE)
     target_sources(crashpad_handler_ui_lib PRIVATE
@@ -63,17 +55,13 @@ endif()
 target_link_libraries(crashpad_handler_ui_lib
     PRIVATE
         $<BUILD_INTERFACE:crashpad_interface>
-        $<BUILD_INTERFACE:xQt::xQt>
     PUBLIC
+        $<BUILD_INTERFACE:CrashUI>
         crashpad_compat
         crashpad_minidump
         crashpad_snapshot
         crashpad_util
         mini_chromium
-        Qt5::Core
-        Qt5::Widgets
-        Qt5::Network
-        LibArchive::LibArchive
 )
 
 target_include_directories(crashpad_handler_ui_lib PRIVATE
@@ -102,11 +90,11 @@ crashpad_install_dev(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
     FILES_MATCHING PATTERN "*.h"
 )
 
-add_executable(test_http_client test_http_client.cpp)
-target_link_libraries(test_http_client PUBLIC crashpad_handler_ui_lib)
+add_executable(test_http_client WIN32 test_http_client.cpp)
+target_link_libraries(test_http_client PUBLIC CrashUI crashpad_handler_ui_lib)
 
 add_executable(test_upload_thread WIN32 test_upload_thread.cpp)
-target_link_libraries(test_upload_thread PUBLIC crashpad_handler_ui_lib)
+target_link_libraries(test_upload_thread PUBLIC CrashUI crashpad_handler_ui_lib)
 target_link_options(test_upload_thread PRIVATE "/SUBSYSTEM:WINDOWS")
 
 if(NOT IOS)

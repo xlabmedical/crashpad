@@ -2,7 +2,7 @@
 // Created by Miha Oražem on 26/07/2023.
 //
 
-#include "medic_attachment_util.h"
+#include "MedicAttachmentUtil.h"
 #include <codecvt>
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -94,7 +94,9 @@ bool MedicCustomLogging(logging::LogSeverity severity,
   logfile.close();
   return true;
 }
-
+QString fpToQString(const base::FilePath& filePath) {
+  return QString::fromStdString(fpToString(filePath));
+}
 
 bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   std::ifstream file(filePath, std::ios::binary);

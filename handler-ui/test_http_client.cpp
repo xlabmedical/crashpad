@@ -7,8 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "handler-ui/ui/CrashUploadProgressDialog.h"
-#include "medic_attachment_util.h"
-#include "mtgui.h"
+#include "MedicAttachmentUtil.h"
 
 #include <QApplication>
 #include <QDebug>

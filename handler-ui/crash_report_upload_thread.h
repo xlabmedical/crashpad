@@ -27,6 +27,8 @@
 #include "util/thread/stoppable.h"
 #include "util/thread/worker_thread.h"
 
+#include "crash_upload_thread_callback_interface.h"
+
 namespace crashpad {
 
 //! \brief A thread that processes pending crash reports in a
@@ -84,12 +86,13 @@ class CrashReportUploadThread : public WorkerThread::Delegate,
   //!     on a background thread each time the this object finishes
   //!     processing and attempting to upload on-disk crash reports.
   //!     If this callback is empty, it is not invoked.
-  CrashReportUploadThread(CrashReportDatabase* database,
-                          std::string url,
-                          std::string http_proxy,
-                          const Options& options,
-                          ProcessPendingReportsObservationCallback callback,
-                          );
+  CrashReportUploadThread(
+      CrashReportDatabase* database,
+      std::string url,
+      std::string http_proxy,
+      const Options& options,
+      ProcessPendingReportsObservationCallback callback,
+      CrashUploadThreadCallbackInterface* callback_interface = nullptr);
 
   CrashReportUploadThread(const CrashReportUploadThread&) = delete;
   CrashReportUploadThread& operator=(const CrashReportUploadThread&) = delete;
@@ -227,6 +230,7 @@ class CrashReportUploadThread : public WorkerThread::Delegate,
 
   const Options options_;
   const ProcessPendingReportsObservationCallback callback_;
+  CrashUploadThreadCallbackInterface* callback_interface_;
   const std::string url_;
   const std::string http_proxy_;
   WorkerThread thread_;
