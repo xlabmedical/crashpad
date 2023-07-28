@@ -19,6 +19,8 @@ struct XMedicProject {
 };
 
 void setLogPath(const base::FilePath& path);
+std::string fpToString(const base::FilePath& filePath);
+QString fpToQString(const base::FilePath& filePath);
 
 bool MedicCustomLogging(logging::LogSeverity severity,
                                const char* file,

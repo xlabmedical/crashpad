@@ -9,9 +9,10 @@ add_library(CrashUI STATIC
     CrashUploadDialog.cpp
     CrashUploadProgressDialog.cpp
     MedicAttachmentUtil.cpp
+    CrashUploadHandler.cpp
 )
 
-target_include_directories(CrashUI PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(CrashUI PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(CrashUI PUBLIC
     Qt5::Core
     Qt5::Widgets

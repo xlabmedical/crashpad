@@ -94,7 +94,9 @@ bool MedicCustomLogging(logging::LogSeverity severity,
   logfile.close();
   return true;
 }
-
+QString fpToQString(const base::FilePath& filePath) {
+  return QString::fromStdString(fpToString(filePath));
+}
 
 bool addFileToArchive(const std::string& filePath, struct archive* archive) {
   std::ifstream file(filePath, std::ios::binary);

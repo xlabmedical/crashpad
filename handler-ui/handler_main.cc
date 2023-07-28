@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "handler/handler_main.h"
+#include "handler-ui/handler_main.h"
 
 #include <errno.h>
 #include <getopt.h>
@@ -44,7 +44,7 @@
 #include "client/crashpad_info.h"
 #include "client/prune_crash_reports.h"
 #include "client/simple_string_dictionary.h"
-#include "handler/crash_report_upload_thread.h"
+#include "handler-ui/crash_report_upload_thread.h"
 #include "handler/prune_crash_reports_thread.h"
 #include "tools/tool_support.h"
 #include "util/file/file_io.h"
@@ -71,11 +71,11 @@
 #include <libgen.h>
 #include <signal.h>
 
+#include "MedicAttachmentUtil.h"
 #include "base/mac/scoped_mach_port.h"
 #include "handler/mac/crash_report_exception_handler.h"
 #include "handler/mac/exception_handler_server.h"
 #include "handler/mac/file_limit_annotation.h"
-#include "MedicAttachmentUtil.h"
 #include "util/mach/bootstrap.h"
 #include "util/mach/child_port_handshake.h"
 #include "util/posix/close_stdio.h"
@@ -94,9 +94,8 @@
 
 #include <QApplication>
 #include <thread>
-#include "ui/CrashUploadDialog.h"
+#include "CrashUploadHandler.h"
 #include "xQt/callback_dispatcher.hpp"
-#include "xQt/post_callback.hpp"
 
 namespace crashpad {
 
@@ -577,8 +576,9 @@ void InitCrashpadLogging(base::FilePath log_folder = base::FilePath()) {
 }
 
 }  // namespace
-void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
-{
+void myMessageOutput(QtMsgType type,
+                     const QMessageLogContext& context,
+                     const QString& msg) {
   QString txt;
   QString level;
   switch (type) {
@@ -1062,6 +1062,9 @@ int HandlerMain(int argc,
 
   QApplication app(argc, argv);
   xQt::callback_dispatcher uiProxy;
+
+  CrashUploadHandler crashCallbackHandler(&uiProxy, database.get(), fpToQString(options.database));
+
   ScopedStoppable upload_thread;
   if (!options.url.empty()) {
     // TODO(scottmg): options.rate_limit should be removed when we have a
@@ -1079,7 +1082,8 @@ int HandlerMain(int argc,
         options.url,
         options.http_proxy,
         upload_thread_options,
-        CrashReportUploadThread::ProcessPendingReportsObservationCallback()));
+        CrashReportUploadThread::ProcessPendingReportsObservationCallback(),
+        &crashCallbackHandler));
     upload_thread.Get()->Start();
   }
 
@@ -1238,13 +1242,11 @@ int HandlerMain(int argc,
   }
 #endif  // BUILDFLAG(IS_WIN)
 
-
-  auto exceptionHandlerThread = std::thread([&exception_handler_server, &exception_handler, &uiProxy](){
-    exception_handler_server.Run(exception_handler.get());
-    uiProxy.dispatch([](){
-        QApplication::quit();
-    });
-  });
+  auto exceptionHandlerThread =
+      std::thread([&exception_handler_server, &exception_handler, &uiProxy]() {
+        exception_handler_server.Run(exception_handler.get());
+        uiProxy.dispatch([]() { QApplication::quit(); });
+      });
 
   app.exec();
   LOG(INFO) << "Crashpad handler exit";

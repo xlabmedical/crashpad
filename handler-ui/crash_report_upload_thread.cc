@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "handler/crash_report_upload_thread.h"
+#include "handler-ui/crash_report_upload_thread.h"
 
 #include <errno.h>
 #include <time.h>
@@ -93,7 +93,8 @@ CrashReportUploadThread::CrashReportUploadThread(
     std::string url,
     std::string http_proxy,
     const Options& options,
-    ProcessPendingReportsObservationCallback callback)
+    ProcessPendingReportsObservationCallback callback,
+    CrashUploadThreadCallbackInterface* callback_interface)
     : options_(options),
       callback_(std::move(callback)),
       url_(std::move(url)),
@@ -106,7 +107,8 @@ CrashReportUploadThread::CrashReportUploadThread(
                                             : WorkerThread::kIndefiniteWait,
               this),
       known_pending_report_uuids_(),
-      database_(database) {
+      database_(database),
+      callback_interface_(callback_interface) {
   DCHECK(!url_.empty());
 }
 
@@ -286,7 +288,12 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
     const CrashReportDatabase::UploadReport* report,
     std::string* response_body) {
   LOG(INFO) << "Uploading report " << report->uuid.ToString();
-
+  if(callback_interface_) {
+    auto consent = callback_interface_->hasUploadConsent();
+    if(!consent) {
+      return UploadResult::kPermanentFailure;
+    }
+  }
 
   std::map<std::string, std::string> parameters;
 
@@ -371,6 +378,11 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
       }
     }
   }
+
+  if(callback_interface_) {
+    callback_interface_->onBeforeUploadReport(report);
+  }
+
   http_transport->SetURL(url);
   http_transport->SetHTTPProxy(http_proxy_);
 
