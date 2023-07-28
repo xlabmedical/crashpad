@@ -70,6 +70,8 @@
 #elif BUILDFLAG(IS_APPLE)
 #include <libgen.h>
 #include <signal.h>
+#include <QApplication>
+#include <thread>
 
 #include "base/mac/scoped_mach_port.h"
 #include "handler/mac/crash_report_exception_handler.h"
@@ -1054,6 +1056,8 @@ int HandlerMain(int argc,
     return ExitFailure();
   }
 
+  QApplication app(argc, argv);
+
   ScopedStoppable upload_thread;
   if (!options.url.empty()) {
     // TODO(scottmg): options.rate_limit should be removed when we have a
@@ -1229,8 +1233,12 @@ int HandlerMain(int argc,
     return ExitFailure();
   }
 #endif  // BUILDFLAG(IS_WIN)
+  auto exceptionHandlerThread = std::thread([&exception_handler_server, &exception_handler](){
+    exception_handler_server.Run(exception_handler.get());
+    QMetaObject::invokeMethod(qApp, &QCoreApplication::quit, Qt::QueuedConnection);
+  });
 
-  exception_handler_server.Run(exception_handler.get());
+  app.exec();
 
   return EXIT_SUCCESS;
 }
