@@ -68,10 +68,10 @@ void CrashUploadProgressDialog::uploadAttachment(const QString& archivePath,
     qDebug() << "Progress" << bytesSent << bytesTotal;
     ui->progressBar->setMaximum(bytesTotal);
     ui->progressBar->setValue(bytesSent);
+    int percentage = (bytesSent * 100) / bytesTotal;
+      ui->labelAction->setText(QString("Uploading crash report...(%1%)").arg(percentage));
   });
-
-
-  ui->labelAction->setText("Uploading crash report...");
+    ui->labelAction->setText("Uploading crash report...");
 }
 
 
@@ -81,7 +81,7 @@ void CrashUploadProgressDialog::uploadAttachmentsExec(XMedicProject project) {
     actionFutures.push_back(std::async(std::launch::async, [&]() {
       const auto response = MedicAttachmentUtil::CompressRGProjectFiles(projectToUpload.files);
         if (response.has_value()) {
-          emit compressionFinished(QString::fromStdString(response.value().value()), QString::fromStdString(projectToUpload.report_uuid));
+          emit compressionFinished(response.value(), QString::fromStdString(projectToUpload.report_uuid));
         }
     }));
 

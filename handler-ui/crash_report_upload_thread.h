@@ -88,7 +88,8 @@ class CrashReportUploadThread : public WorkerThread::Delegate,
                           std::string url,
                           std::string http_proxy,
                           const Options& options,
-                          ProcessPendingReportsObservationCallback callback);
+                          ProcessPendingReportsObservationCallback callback,
+                          );
 
   CrashReportUploadThread(const CrashReportUploadThread&) = delete;
   CrashReportUploadThread& operator=(const CrashReportUploadThread&) = delete;

@@ -70,8 +70,6 @@
 #elif BUILDFLAG(IS_APPLE)
 #include <libgen.h>
 #include <signal.h>
-#include <QApplication>
-#include <thread>
 
 #include "base/mac/scoped_mach_port.h"
 #include "handler/mac/crash_report_exception_handler.h"
@@ -93,6 +91,12 @@
 #include "util/win/initial_client_data.h"
 #include "util/win/session_end_watcher.h"
 #endif  // BUILDFLAG(IS_APPLE)
+
+#include <QApplication>
+#include <thread>
+#include "ui/CrashUploadDialog.h"
+#include "xQt/callback_dispatcher.hpp"
+#include "xQt/post_callback.hpp"
 
 namespace crashpad {
 
@@ -1057,7 +1061,7 @@ int HandlerMain(int argc,
   }
 
   QApplication app(argc, argv);
-
+  xQt::callback_dispatcher uiProxy;
   ScopedStoppable upload_thread;
   if (!options.url.empty()) {
     // TODO(scottmg): options.rate_limit should be removed when we have a
@@ -1075,7 +1079,8 @@ int HandlerMain(int argc,
         options.url,
         options.http_proxy,
         upload_thread_options,
-        CrashReportUploadThread::ProcessPendingReportsObservationCallback()));
+        CrashReportUploadThread::ProcessPendingReportsObservationCallback(),
+                            &uiProxy));
     upload_thread.Get()->Start();
   }
 
@@ -1233,13 +1238,17 @@ int HandlerMain(int argc,
     return ExitFailure();
   }
 #endif  // BUILDFLAG(IS_WIN)
-  auto exceptionHandlerThread = std::thread([&exception_handler_server, &exception_handler](){
+
+
+  auto exceptionHandlerThread = std::thread([&exception_handler_server, &exception_handler, &uiProxy](){
     exception_handler_server.Run(exception_handler.get());
-    QMetaObject::invokeMethod(qApp, &QCoreApplication::quit, Qt::QueuedConnection);
+    uiProxy.dispatch([](){
+        QApplication::quit();
+    });
   });
 
   app.exec();
-
+  LOG(INFO) << "Crashpad handler exit";
   return EXIT_SUCCESS;
 }
 

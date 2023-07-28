@@ -28,10 +28,8 @@ bool MedicCustomLogging(logging::LogSeverity severity,
 namespace MedicAttachmentUtil {
 std::optional<XMedicProject> GetMedicProjectFromReport(
     const crashpad::CrashReportDatabase::UploadReport* report);
-std::optional<base::FilePath> CompressRGProjectFiles(
+std::optional<QString> CompressRGProjectFiles(
     const std::vector<std::string>& files);
-bool UploadRGProjectFile(std::string report_id, base::FilePath file);
-bool UploadRGProjectFile(std::string report_id, QString filePath);
 };  // namespace MedicAttachmentUtil
 
 #endif  // CRASHPAD_MEDIC_ATTACHMENT_UTIL_H
