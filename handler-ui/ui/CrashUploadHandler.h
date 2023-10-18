@@ -20,6 +20,7 @@ enum class UploadConsentType {
   WithProject,
 };
 
+
 class CrashUploadHandler : public crashpad::CrashUploadThreadCallbackInterface {
  private:
   xQt::callback_dispatcher* mpDispatcher;

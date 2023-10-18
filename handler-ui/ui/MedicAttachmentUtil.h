@@ -13,10 +13,7 @@
 
 #include <QString>
 
-struct XMedicProject {
-  std::vector<std::string> files;
-  std::string report_uuid;
-};
+#include "XMedicProject.h"
 
 void setLogPath(const base::FilePath& path);
 std::string fpToString(const base::FilePath& filePath);
@@ -30,8 +27,6 @@ bool MedicCustomLogging(logging::LogSeverity severity,
 namespace MedicAttachmentUtil {
 std::optional<XMedicProject> GetMedicProjectFromReport(
     const crashpad::CrashReportDatabase::UploadReport* report);
-std::optional<QString> CompressRGProjectFiles(
-    const std::vector<std::string>& files);
 };  // namespace MedicAttachmentUtil
 
 #endif  // CRASHPAD_MEDICATTACHMENTUTIL_H

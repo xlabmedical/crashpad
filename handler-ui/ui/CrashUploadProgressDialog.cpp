@@ -14,6 +14,7 @@
 #include <QNetworkRequest>
 #include <thread>
 #include <utility>
+#include "CompressUtil.h"
 #include "QNetworkReply"
 #include "ui_CrashUploadProgressDialog.h"
 CrashUploadProgressDialog::CrashUploadProgressDialog(QWidget* parent)
@@ -106,7 +107,7 @@ bool CrashUploadProgressDialog::uploadAttachmentsExec(XMedicProject project) {
   this->projectToUpload = std::move(project);
   actionFutures.push_back(std::async(std::launch::async, [&]() {
     const auto response =
-        MedicAttachmentUtil::CompressRGProjectFiles(projectToUpload.files);
+        CompressUtil::CompressRGProjectFiles(projectToUpload.files);
     if (response.has_value()) {
       emit compressionFinished(
           response.value(),

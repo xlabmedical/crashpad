@@ -82,7 +82,7 @@ void CrashUploadHandler::onUploadReportDone(
     LOG(INFO) << "Project: " << project.has_value();
     if (project && mpProgressDialog) {
       std::promise<bool> promise;
-      mpDispatcher->dispatch([this, report, project, &promise]() {
+      mpDispatcher->dispatch([this, project, &promise]() {
         mpProgressDialog->uploadAttachmentsExec(project.value());
         promise.set_value(true);
       });

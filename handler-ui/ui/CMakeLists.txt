@@ -10,6 +10,7 @@ add_library(CrashUI STATIC
     CrashUploadProgressDialog.cpp
     MedicAttachmentUtil.cpp
     CrashUploadHandler.cpp
+    CompressUtil.cpp
 )
 
 target_include_directories(CrashUI PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
