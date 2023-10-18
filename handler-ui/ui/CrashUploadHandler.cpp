@@ -7,7 +7,7 @@
 #include <future>
 #include "CrashUploadDialog.h"
 #include "CrashUploadProgressDialog.h"
-
+#include "MedicAttachmentUtil.h"
 #ifdef Q_OS_WIN
 #include <QtPlatformHeaders/QWindowsWindowFunctions>
 #endif

@@ -28,7 +28,7 @@ CrashUploadProgressDialog::CrashUploadProgressDialog(QWidget* parent)
           &CrashUploadProgressDialog::compressionFinished,
           this,
           [=](const QString& archivePath, const QString& reportId) {
-            uploadAttachment(archivePath, reportId);
+            getUploadURL(archivePath, reportId);
           });
   connect(
       this, &CrashUploadProgressDialog::error, this, [=](const QString& error) {
@@ -43,32 +43,39 @@ CrashUploadProgressDialog::~CrashUploadProgressDialog() {
   delete ui;
 }
 
-void CrashUploadProgressDialog::uploadAttachment(const QString& archivePath,
-                                                 const QString& reportId) {
-  QUrl url(QString("https://crash.medicteam.io/upload-item/%1").arg(reportId));
+void CrashUploadProgressDialog::getUploadURL(const QString& archivePath, const QString& reportId) {
+  QUrl url(QString("https://crash.medicteam.io/upload-item-url/%1").arg(reportId));
   QNetworkRequest request(url);
 
   request.setRawHeader("Medic-Secret", "0e992b12-1192-4a65-a0c0-b4461d28d12f");
 
-  auto* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+  QNetworkReply* reply = manager.get(request);
 
-  QHttpPart filePart;
-  filePart.setHeader(QNetworkRequest::ContentTypeHeader,
-                     QVariant("application/octet-stream"));
-  const auto dispositionHeader =
-      QString(R"(form-data; name="project_file"; filename="archive.zip")");
-  filePart.setHeader(QNetworkRequest::ContentDispositionHeader,
-                     QVariant(dispositionHeader));
+  connect(reply, &QNetworkReply::finished, this, [=]() {
+    QVariant status_code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    if (reply->error() == QNetworkReply::NoError && status_code.toInt() == 200) {
+      const auto url = reply->readAll();
+      qDebug() << "URL Success" << url;
+      uploadAttachment(archivePath, reportId, url);
+    } else {
+      qDebug() << "URL Error" << reply->readAll() << " status: " << status_code.toInt();
+      reject();
+    }
+  });
+}
+
+void CrashUploadProgressDialog::uploadAttachment(const QString& archivePath,
+                                                 const QString& reportId, const  QString& uploadUrl) {
+  QUrl url(uploadUrl);
+  QNetworkRequest request(url);
 
   auto* file = new QFile(archivePath);
   file->open(QIODevice::ReadOnly);
-  filePart.setBodyDevice(file);
-  file->setParent(multiPart);
 
-  multiPart->append(filePart);
+  QNetworkReply* reply = manager.put(request, file);
 
-  QNetworkReply* reply = manager.post(request, multiPart);
-  multiPart->setParent(reply);  // delete the multiPart with the reply
+  file->setParent(reply);
+
   connect(reply, &QNetworkReply::finished, this, [=]() {
     if (reply->error() == QNetworkReply::NoError) {
       qDebug() << "Success" << reply->readAll();

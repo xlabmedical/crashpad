@@ -90,7 +90,7 @@ crashpad_install_dev(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
     FILES_MATCHING PATTERN "*.h"
 )
 
-add_executable(test_http_client WIN32 test_http_client.cpp)
+add_executable(test_http_client test_http_client.cpp)
 target_link_libraries(test_http_client PUBLIC CrashUI crashpad_handler_ui_lib)
 
 add_executable(test_upload_thread WIN32 test_upload_thread.cpp)

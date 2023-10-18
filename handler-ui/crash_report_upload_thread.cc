@@ -390,7 +390,7 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
     LOG(WARNING) << "http_transport->ExecuteSynchronously failed";
     return UploadResult::kRetry;
   }
-  LOG(INFO) << "Upload complete: " << report->uuid.ToString();
+  LOG(INFO) << "Upload complete: " << report->uuid.ToString() << "Message: " << *response_body;
 
   if (callback_interface_) {
     callback_interface_->onUploadReportDone(report);

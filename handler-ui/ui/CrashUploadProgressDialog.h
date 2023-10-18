@@ -8,7 +8,7 @@
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <future>
-#include "MedicAttachmentUtil.h"
+#include "XMedicProject.h"
 namespace Ui {
   class CrashUploadProgressDialog;
 }
@@ -22,14 +22,14 @@ class CrashUploadProgressDialog : public QDialog {
   XMedicProject projectToUpload;
 
   void uploadAttachment(const QString& archivePath,
-                        const QString& reportId);
+                        const QString& reportId, const QString& uploadUrl);
 
+  void getUploadURL(const QString& archivePath, const QString& reportId);
  public:
   explicit CrashUploadProgressDialog(QWidget* parent = nullptr);
   ~CrashUploadProgressDialog() override;
 
   bool uploadAttachmentsExec(XMedicProject project);
-
   void showDialog();
 
  protected:

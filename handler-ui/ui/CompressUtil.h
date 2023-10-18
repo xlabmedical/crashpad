@@ -6,6 +6,7 @@
 #define CRASHPAD_COMPRESSUTIL_H
 #include <QString>
 #include <optional>
+#include <vector>
 
 namespace CompressUtil {
 std::optional<QString> CompressRGProjectFiles(

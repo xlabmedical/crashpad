@@ -12,19 +12,39 @@
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
-
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+  QByteArray localMsg = msg.toLocal8Bit();
+  switch (type) {
+    case QtDebugMsg:
+      fprintf(stderr, "Debug: %s\n", localMsg.constData());
+      break;
+    case QtInfoMsg:
+      fprintf(stderr, "Info: %s\n", localMsg.constData());
+      break;
+    case QtWarningMsg:
+      fprintf(stderr, "Warning: %s\n", localMsg.constData());
+      break;
+    case QtCriticalMsg:
+      fprintf(stderr, "Critical: %s\n", localMsg.constData());
+      break;
+    case QtFatalMsg:
+      fprintf(stderr, "Fatal: %s\n", localMsg.constData());
+      abort();
+  }
+}
 int main(int argc, char** argv) {
   logging::LoggingSettings settings;
   settings.logging_dest =
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
 
-    const char* directoryPath =
-        "/Users/miha/.config/RealGUIDE50-DB/Storage/Chrome1676563822/Projects";
-
-//  const char* directoryPath =
-//      "C:\\Users\\Miha\\AppData\\Roaming\\RealGUIDE50-"
-//      "DB\\Storage\\XX1684238711\\Projects";
+  //  const char* directoryPath =
+  //      "/Users/miha/.config/RealGUIDE50-DB/Storage/Chrome1676563822/Projects";
+  //
+  const char* directoryPath =
+      "C:\\Users\\Miha\\AppData\\Roaming\\RealGUIDE50-"
+      "DB\\Storage\\XX1684238711\\Projects";
   QDir dir(directoryPath);
 
   if (!dir.exists()) {
@@ -44,15 +64,15 @@ int main(int argc, char** argv) {
     const auto fullPath = dir.filePath(fileName);
     files.push_back(fullPath.toStdString());
   }
-  QApplication app(argc, argv);
+//  QApplication app(argc, argv);
 //  run_in_gui_thread_blocking(new QAppLambda([]() {
-    CrashUploadProgressDialog dialog;
+//    CrashUploadProgressDialog dialog;
 //
-    dialog.uploadAttachmentsExec(
-        XMedicProject({{"/Users/miha/Downloads/3Diemme.zip"}, "truetest"}));
+//    dialog.uploadAttachmentsExec(
+////        XMedicProject({{"/Users/miha/Downloads/3Diemme.zip"}, "truetest"}));
 //              XMedicProject({{"C:\\Users\\Miha\\Downloads\\RealGUIDE5.3-x64-14-07-2023-Setup.exe"}, "truetest2"}));
 //  }));
-      app.exec();
+  //    app.exec();
 
 
 }
