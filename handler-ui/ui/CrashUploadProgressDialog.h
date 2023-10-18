@@ -36,6 +36,7 @@ class CrashUploadProgressDialog : public QDialog {
   void showEvent(QShowEvent* event) override;
  signals:
     void compressionFinished(const QString& archivePath, const QString& reportId);
+    void error(const QString& error);
 };
 
 #endif  // CRASHPAD_CRASHUPLOADPROGRESSDIALOG_H

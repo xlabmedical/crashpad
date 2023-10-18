@@ -134,7 +134,7 @@ std::optional<QString> MedicAttachmentUtil::CompressRGProjectFiles(
     const std::vector<std::string>& files) {
   QTemporaryDir tempDir;
   tempDir.setAutoRemove(false);
-  const auto filePath = tempDir.filePath("archive.zip");
+  auto filePath = tempDir.filePath("archive.zip");
   const auto filePathString = filePath.toStdString();
   int status = 0;
 

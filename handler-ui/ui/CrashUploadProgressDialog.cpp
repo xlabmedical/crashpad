@@ -9,6 +9,7 @@
 
 #include <QFile>
 #include <QHttpPart>
+#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <thread>
@@ -28,8 +29,13 @@ CrashUploadProgressDialog::CrashUploadProgressDialog(QWidget* parent)
           [=](const QString& archivePath, const QString& reportId) {
             uploadAttachment(archivePath, reportId);
           });
-    setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint);
-    ui->btnCancel->setEnabled(false);
+  connect(
+      this, &CrashUploadProgressDialog::error, this, [=](const QString& error) {
+        QMessageBox::critical(this, "Error", error);
+        reject();
+      });
+  setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint);
+  ui->btnCancel->setEnabled(false);
 }
 
 CrashUploadProgressDialog::~CrashUploadProgressDialog() {
@@ -105,6 +111,9 @@ bool CrashUploadProgressDialog::uploadAttachmentsExec(XMedicProject project) {
       emit compressionFinished(
           response.value(),
           QString::fromStdString(projectToUpload.report_uuid));
+    } else {
+      emit error(
+          "Error compressing project files. The project will not be included.");
     }
   }));
   return exec() == QDialog::Accepted;
@@ -117,6 +126,6 @@ void CrashUploadProgressDialog::showEvent(QShowEvent* event) {
 }
 
 void CrashUploadProgressDialog::showDialog() {
-    ui->labelAction->setText("Preparing crash report...");
-    open();
+  ui->labelAction->setText("Preparing crash report...");
+  open();
 }

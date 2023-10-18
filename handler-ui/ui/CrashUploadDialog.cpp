@@ -10,17 +10,14 @@ CrashUploadDialog::CrashUploadDialog(QWidget* parent) : QDialog(parent) {
   ui = new Ui::CrashUploadDialog;
   ui->setupUi(this);
   setWindowTitle(tr("RealGUIDE Crash detected"));
-  connect(ui->btnAlways, &QAbstractButton::clicked, this, [this]() {
-    done(static_cast<int>(UserSelection::Always));
-  });
-  connect(ui->btnNever, &QAbstractButton::clicked, this, [this]() {
-    done(static_cast<int>(UserSelection::Never));
+  connect(ui->btnNo, &QAbstractButton::clicked, this, [this]() {
+    done(static_cast<int>(UserSelection::No));
   });
   connect(ui->btnOk, &QAbstractButton::clicked, this, [this]() {
     done(static_cast<int>(UserSelection::Once));
   });
   setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint);
-  ui->btnAlways->setFocus();
+  ui->btnOk->setFocus();
 }
 
 CrashUploadDialog::~CrashUploadDialog() {

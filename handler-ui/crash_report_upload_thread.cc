@@ -250,6 +250,7 @@ void CrashReportUploadThread::ProcessPendingReport(
   if (callback_interface_) {
     auto consent = callback_interface_->hasUploadConsent();
     if (!consent) {
+      database_->DeleteReport(report.uuid);
       return;
     }
   }

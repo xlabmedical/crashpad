@@ -13,7 +13,6 @@ enum class UploadConsent {
   NotAsked = -1,
   Denied,
   GrantedOnce,
-  Granted,
 };
 
 enum class UploadConsentType {
@@ -23,19 +22,17 @@ enum class UploadConsentType {
 
 class CrashUploadHandler : public crashpad::CrashUploadThreadCallbackInterface {
  private:
-  std::unique_ptr<QSettings> mpSettings;
   xQt::callback_dispatcher* mpDispatcher;
   crashpad::CrashReportDatabase* mpDatabase;
   QString mDatabasePath;
 
-  UploadConsent mUploadConsent;
-  UploadConsentType mUploadConsentType;
+  UploadConsent mUploadConsent = UploadConsent::NotAsked;
+  UploadConsentType mUploadConsentType = UploadConsentType::Basic;
 
   std::shared_ptr<CrashUploadProgressDialog> mpProgressDialog;
  public:
   explicit CrashUploadHandler(xQt::callback_dispatcher* pDispatcher,
                               crashpad::CrashReportDatabase* database, const QString& pDatabasePath);
-  void reloadSettings();
   bool hasUploadConsent() override;
   bool onBeforeUploadReport(
       const crashpad::CrashReportDatabase::UploadReport* report) override;

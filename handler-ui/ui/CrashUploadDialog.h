@@ -12,10 +12,8 @@ namespace Ui {
 }
 
 enum class UserSelection {
-  DeniedOnce = 0,
-  Never = 1,
+  No = 0,
   Once,
-  Always,
 };
 
 struct DialogResult {

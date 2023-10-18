@@ -37,23 +37,16 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="btnNever">
+      <widget class="QPushButton" name="btnNo">
        <property name="text">
-        <string>Never</string>
+        <string>No</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btnOk">
        <property name="text">
-        <string>Once</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnAlways">
-       <property name="text">
-        <string>Always</string>
+        <string>Yes</string>
        </property>
       </widget>
      </item>
